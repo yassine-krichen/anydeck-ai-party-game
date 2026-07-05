@@ -1,8 +1,8 @@
 {
   "id": "memes",
   "title": "Memes & Internet",
-  "emoji": "😂",
-  "color": "#FFD60A",
+  "icon": "laugh",
+  "color": "#A144AF",
   "description": "Internet culture — describe it without dying of laughter.",
   "lang": "en",
   "premium": true,

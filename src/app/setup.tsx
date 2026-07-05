@@ -4,6 +4,7 @@ import { StyleSheet, TextInput, View } from 'react-native';
 
 import { AppText } from '@/components/app-text';
 import { BigButton } from '@/components/big-button';
+import { Icon } from '@/components/icon';
 import { PressableScale } from '@/components/pressable-scale';
 import { Screen } from '@/components/screen';
 import { TopBar } from '@/components/top-bar';
@@ -64,7 +65,7 @@ export default function SetupScreen() {
 
   return (
     <Screen>
-      <TopBar title={`${deck.emoji} ${deck.title}`} />
+      <TopBar title={deck.title} />
 
       <AppText variant="caption" dim style={styles.label}>
         MODE
@@ -119,9 +120,7 @@ export default function SetupScreen() {
                   onPress={() => setEntries((prev) => prev.filter((_, j) => j !== i))}
                   accessibilityLabel="Remove"
                 >
-                  <AppText variant="headline" dim>
-                    ✕
-                  </AppText>
+                  <Icon name="x" size={20} color={colors.textDim} />
                 </PressableScale>
               )}
             </View>
@@ -130,7 +129,7 @@ export default function SetupScreen() {
             <BigButton
               variant="ghost"
               label="Add player"
-              icon="＋"
+              icon="plus"
               onPress={() =>
                 setEntries((prev) => [...prev, `Player ${prev.length + 1}`])
               }
@@ -166,8 +165,9 @@ export default function SetupScreen() {
       )}
 
       <View style={styles.info}>
+        <Icon name="timer" size={14} color={colors.textDim} />
         <AppText variant="caption" dim>
-          ⏱ {settings.roundSeconds}s per round ·{' '}
+          {settings.roundSeconds}s per round ·{' '}
           {settings.maxSkips === 0 ? 'unlimited skips' : `${settings.maxSkips} skips`} — change
           in Settings
         </AppText>
@@ -175,7 +175,7 @@ export default function SetupScreen() {
 
       <BigButton
         label="Start"
-        icon="🚀"
+        icon="play"
         color={deck.color}
         textColor="#FFFFFF"
         disabled={!canStart}
@@ -205,5 +205,10 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   stepper: { flexDirection: 'row', gap: 10 },
-  info: { marginVertical: 20 },
+  info: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginVertical: 20,
+  },
 });

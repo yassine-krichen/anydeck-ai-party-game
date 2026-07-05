@@ -1,8 +1,8 @@
 {
   "id": "countries",
   "title": "Countries & Places",
-  "emoji": "🌍",
-  "color": "#0A84FF",
+  "icon": "earth",
+  "color": "#0B68CB",
   "description": "Countries, cities, and landmarks around the globe.",
   "lang": "en",
   "premium": false,

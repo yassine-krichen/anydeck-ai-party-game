@@ -1,10 +1,11 @@
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useEffect, useMemo, useState } from 'react';
+import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
+import { useCallback, useMemo, useState } from 'react';
 import { Alert, Modal, Share, StyleSheet, View } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
 
 import { AppText } from '@/components/app-text';
 import { BigButton } from '@/components/big-button';
+import { Icon } from '@/components/icon';
 import { PressableScale } from '@/components/pressable-scale';
 import { Screen } from '@/components/screen';
 import { TopBar } from '@/components/top-bar';
@@ -32,11 +33,13 @@ export default function DeckDetailScreen() {
   const [favorite, setFavorite] = useState(false);
   const [qrVisible, setQrVisible] = useState(false);
 
-  useEffect(() => {
-    if (!id) return;
-    getDeck(id).then((d) => setDeck(d ?? null));
-    getFavoriteIds().then((favs) => setFavorite(favs.includes(id)));
-  }, [id]);
+  useFocusEffect(
+    useCallback(() => {
+      if (!id) return;
+      getDeck(id).then((d) => setDeck(d ?? null));
+      getFavoriteIds().then((favs) => setFavorite(favs.includes(id)));
+    }, [id])
+  );
 
   const playable = deck ? isDeckPlayable(deck, economy.state, economy.sessionUnlocks) : false;
   const shareCode = useMemo(() => (deck ? encodeDeck(deck) : ''), [deck]);
@@ -82,18 +85,29 @@ export default function DeckDetailScreen() {
         title=""
         right={
           <PressableScale onPress={onToggleFavorite} accessibilityLabel="Toggle favorite">
-            <AppText variant="title">{favorite ? '⭐' : '☆'}</AppText>
+            <Icon
+              name="star"
+              size={24}
+              color={favorite ? colors.gold : colors.textDim}
+              fill={favorite ? colors.gold : 'none'}
+            />
           </PressableScale>
         }
       />
       <View style={[styles.hero, { backgroundColor: deck.color }]}>
-        <AppText style={styles.heroEmoji}>{deck.emoji}</AppText>
+        <View style={styles.heroIcon}>
+          <Icon name={deck.icon} size={44} color="#FFFFFF" />
+        </View>
         <AppText variant="display" color="#FFFFFF" center>
           {deck.title}
         </AppText>
-        <AppText variant="caption" color="rgba(255,255,255,0.9)" center>
-          {deck.cards.length} cards · {deck.lang.toUpperCase()}
-        </AppText>
+        <View style={styles.heroMeta}>
+          <HeroStat label="CARDS" value={String(deck.cards.length)} />
+          <View style={styles.heroDivider} />
+          <HeroStat label="LANGUAGE" value={deck.lang.toUpperCase()} />
+          <View style={styles.heroDivider} />
+          <HeroStat label="ACCESS" value={playable ? 'READY' : 'LOCKED'} />
+        </View>
       </View>
 
       <AppText dim style={styles.description}>
@@ -102,10 +116,7 @@ export default function DeckDetailScreen() {
 
       <View style={styles.samples}>
         {sampleCards.map((card) => (
-          <View
-            key={card}
-            style={[styles.sample, { backgroundColor: colors.surfaceAlt }]}
-          >
+          <View key={card} style={[styles.sample, { backgroundColor: colors.surfaceAlt }]}>
             <AppText variant="caption">{card}</AppText>
           </View>
         ))}
@@ -114,15 +125,17 @@ export default function DeckDetailScreen() {
       {playable ? (
         <BigButton
           label="Play this deck"
+          icon="play"
           color={deck.color}
           textColor="#FFFFFF"
           onPress={() => router.push({ pathname: '/setup', params: { deckId: deck.id } })}
         />
       ) : (
         <View style={styles.lockActions}>
-          <AppText variant="headline" center>
-            🔒 Premium deck
-          </AppText>
+          <View style={styles.lockHeader}>
+            <Icon name="lock" size={18} color={colors.textDim} />
+            <AppText variant="headline">Premium deck</AppText>
+          </View>
           <BigButton
             label="Unlock forever · $1.99"
             onPress={async () => {
@@ -131,13 +144,14 @@ export default function DeckDetailScreen() {
           />
           <BigButton
             variant="secondary"
-            label="Watch ad — play it free this session"
+            label="Watch an ad — free this session"
             onPress={async () => {
               await economy.showRewardedAd(deck.id);
             }}
           />
           <BigButton
             variant="ghost"
+            icon="crown"
             label="Get everything with AnyDeck+"
             onPress={() => router.push('/settings')}
           />
@@ -145,11 +159,11 @@ export default function DeckDetailScreen() {
       )}
 
       <View style={styles.secondaryActions}>
-        <BigButton variant="secondary" icon="📤" label="Share deck" onPress={onShare} />
+        <BigButton variant="secondary" icon="share" label="Share deck" onPress={onShare} />
         {shareCode.length <= MAX_QR_CHARS && (
           <BigButton
             variant="secondary"
-            icon="🔳"
+            icon="qr-code"
             label="Show QR code"
             onPress={() => setQrVisible(true)}
           />
@@ -158,11 +172,11 @@ export default function DeckDetailScreen() {
           <>
             <BigButton
               variant="secondary"
-              icon="✏️"
+              icon="pencil"
               label="Edit deck"
               onPress={() => router.push({ pathname: '/custom', params: { id: deck.id } })}
             />
-            <BigButton variant="ghost" icon="🗑" label="Delete" onPress={onDelete} />
+            <BigButton variant="ghost" icon="trash" label="Delete" onPress={onDelete} />
           </>
         )}
       </View>
@@ -177,7 +191,7 @@ export default function DeckDetailScreen() {
               <QRCode value={shareCode} size={240} backgroundColor="#FFFFFF" />
             </View>
             <AppText variant="caption" dim center>
-              Friends paste this into AnyDeck → Import
+              Friends scan this with their camera, or paste the code into AnyDeck
             </AppText>
             <BigButton variant="secondary" label="Close" onPress={() => setQrVisible(false)} />
           </View>
@@ -187,22 +201,54 @@ export default function DeckDetailScreen() {
   );
 }
 
+function HeroStat({ label, value }: { label: string; value: string }) {
+  return (
+    <View style={styles.heroStat}>
+      <AppText variant="headline" color="#FFFFFF">
+        {value}
+      </AppText>
+      <AppText variant="caption" color="rgba(255,255,255,0.75)">
+        {label}
+      </AppText>
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
   hero: {
-    borderRadius: 28,
+    borderRadius: 26,
     alignItems: 'center',
-    paddingVertical: 32,
+    paddingTop: 28,
+    paddingBottom: 20,
     paddingHorizontal: 20,
-    gap: 8,
+    gap: 14,
     marginBottom: 16,
   },
-  heroEmoji: { fontSize: 56, lineHeight: 64 },
-  description: { marginBottom: 16 },
+  heroIcon: {
+    width: 84,
+    height: 84,
+    borderRadius: 24,
+    backgroundColor: 'rgba(255,255,255,0.16)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  heroMeta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.18)',
+    borderRadius: 16,
+    paddingVertical: 10,
+    paddingHorizontal: 8,
+    alignSelf: 'stretch',
+  },
+  heroStat: { flex: 1, alignItems: 'center', gap: 2 },
+  heroDivider: { width: 1, height: 26, backgroundColor: 'rgba(255,255,255,0.25)' },
+  description: { marginBottom: 14 },
   samples: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 8,
-    marginBottom: 24,
+    marginBottom: 22,
   },
   sample: {
     paddingHorizontal: 12,
@@ -210,6 +256,13 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   lockActions: { gap: 10 },
+  lockHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    marginBottom: 2,
+  },
   secondaryActions: { gap: 10, marginTop: 12 },
   qrBackdrop: {
     flex: 1,

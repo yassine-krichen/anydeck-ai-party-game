@@ -1,8 +1,8 @@
 {
   "id": "classic",
   "title": "Classic Mix",
-  "emoji": "🎉",
-  "color": "#FF5470",
+  "icon": "party-popper",
+  "color": "#E54D2E",
   "description": "A bit of everything — the perfect first deck for any group.",
   "lang": "en",
   "premium": false,

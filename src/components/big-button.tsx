@@ -3,6 +3,7 @@ import { StyleSheet, View } from 'react-native';
 import { useAppTheme } from '@/features/theme/use-app-theme';
 
 import { AppText } from './app-text';
+import { Icon, type IconName } from './icon';
 import { PressableScale } from './pressable-scale';
 
 interface BigButtonProps {
@@ -12,7 +13,7 @@ interface BigButtonProps {
   color?: string;
   textColor?: string;
   disabled?: boolean;
-  icon?: string;
+  icon?: IconName;
 }
 
 /** Full-width action button, 56pt tall — the app's primary CTA shape. */
@@ -33,8 +34,7 @@ export function BigButton({
       : variant === 'secondary'
         ? colors.surfaceAlt
         : 'transparent';
-  const labelColor =
-    textColor ?? (variant === 'primary' ? colors.onAccent : colors.text);
+  const labelColor = textColor ?? (variant === 'primary' ? colors.onAccent : colors.text);
 
   return (
     <PressableScale onPress={onPress} disabled={disabled} accessibilityLabel={label}>
@@ -45,8 +45,9 @@ export function BigButton({
           variant === 'ghost' && { borderWidth: 1.5, borderColor: colors.border },
         ]}
       >
+        {icon && <Icon name={icon} size={20} color={labelColor} />}
         <AppText variant="headline" color={labelColor}>
-          {icon ? `${icon}  ${label}` : label}
+          {label}
         </AppText>
       </View>
     </PressableScale>
@@ -60,5 +61,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     flexDirection: 'row',
+    gap: 10,
+    paddingHorizontal: 20,
   },
 });

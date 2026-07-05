@@ -1,8 +1,8 @@
 {
   "id": "anime",
   "title": "Anime",
-  "emoji": "🌸",
-  "color": "#FF6FB5",
+  "icon": "swords",
+  "color": "#D6409F",
   "description": "Shonen legends, Ghibli magic, and everything in between.",
   "lang": "en",
   "premium": true,

@@ -54,12 +54,13 @@ Tilt controls need a physical device. In the simulator use the tap zones.
 
 ## AI deck generation (server)
 
-The mobile app calls a tiny API so the Anthropic key never ships in the binary.
+The mobile app calls a tiny API so the AI key never ships in the binary. The server uses
+**Gemini 2.5 Flash** over plain REST (zero dependencies) — a free-tier Google AI Studio key
+is enough to launch.
 
 ```sh
 cd server
-npm install
-# deploy to Vercel (or any Web-standard runtime) with ANTHROPIC_API_KEY set
+# deploy to Vercel (or any Web-standard runtime) with GEMINI_API_KEY set
 ```
 
 Then point the app at it:
@@ -69,7 +70,9 @@ Then point the app at it:
 EXPO_PUBLIC_ANYDECK_API_URL=https://your-deployment.vercel.app
 ```
 
-Before production: add rate limiting + entitlement checks in `server/api/generate-deck.ts` (marked with TODO).
+The endpoint ships with input validation and a best-effort per-device/IP rate limit
+(10 decks/hour). For serious volume, swap the in-memory limiter for Upstash Redis and
+add entitlement checks (subscription receipt) before generating.
 
 ## Monetization plan (seams already in code)
 
@@ -83,12 +86,27 @@ Before production: add rate limiting + entitlement checks in `server/api/generat
 
 All three payment/ad stubs live in one file (`src/features/economy/economy.tsx`) and grant instantly today, so the whole app is testable without store accounts.
 
+## Design system
+
+- **No emoji, anywhere.** Lucide stroke icons via a curated, tree-shaken registry
+  (`src/components/icon.tsx`). Deck icons are data (`deck.icon`), picked by the AI or the user.
+- **Ink & amber.** Warm near-black neutrals, one confident amber accent with dark-on-amber
+  CTAs, and 12 deck hues drawn from a single saturation family so the catalog reads curated.
+- System font at heavy weights (the native-feel move), uppercase tracked labels for
+  section headers, 18–26pt radii, 1px hairline borders on surfaces.
+- Reduced-motion respected (confetti disables itself), all touchables 44pt+, every control
+  carries an accessibility label.
+
 ## Ship checklist
 
-- [ ] RevenueCat + store products (deck unlocks, subscription)
-- [ ] AdMob rewarded ads
-- [ ] Rate-limit + entitle the generation endpoint
-- [ ] App icons / splash (replace Expo defaults)
-- [ ] EAS build profiles + store listings (screenshots of the color-flood play screen)
+- [x] App icon, adaptive icon, monochrome icon, splash, favicon (`scripts/generate-icons.js`)
+- [x] EAS build profiles (`eas.json`), bundle IDs (`com.anydeck.app`), export-compliance flag
+- [x] Root error boundary, orientation handling (portrait app, landscape gameplay)
+- [x] Generation server: Gemini 2.5 Flash free tier, validation + rate limiting
+- [x] Privacy policy (`PRIVACY.md`) — no data collected, everything on-device
+- [ ] RevenueCat + store products (deck unlocks, subscription) — seams in `economy.tsx`
+- [ ] AdMob rewarded ads — seam in `economy.tsx`
+- [ ] Store listings (screenshots of the color-flood play screen)
 - [ ] More non-English bundled decks (ar/fr) — biggest cheap growth lever
-- [ ] Remote deck catalog endpoint (same JSON shape as `src/features/decks/data/`)
+
+Build: `npx eas build --profile production --platform all` (after `eas login` + `eas init`).

@@ -3,6 +3,7 @@ import { StyleSheet, View } from 'react-native';
 
 import { AppText } from '@/components/app-text';
 import { BigButton } from '@/components/big-button';
+import { Icon, type IconName } from '@/components/icon';
 import { PressableScale } from '@/components/pressable-scale';
 import { Screen } from '@/components/screen';
 import { dailyChallengeDeck } from '@/features/decks/deck-registry';
@@ -20,67 +21,82 @@ export default function HomeScreen() {
   return (
     <Screen>
       <View style={styles.header}>
-        <AppText variant="display">
-          Any<AppText variant="display" color={colors.accent}>Deck</AppText>
-        </AppText>
+        <View>
+          <AppText variant="display">AnyDeck</AppText>
+          <AppText variant="caption" dim>
+            THE PARTY GAME ABOUT ANYTHING
+          </AppText>
+        </View>
         <View style={[styles.coins, { backgroundColor: colors.surfaceAlt }]}>
-          <AppText variant="headline">🪙 {state.coins}</AppText>
+          <Icon name="coins" size={16} color={colors.gold} />
+          <AppText variant="headline">{state.coins}</AppText>
         </View>
       </View>
-      <AppText dim style={styles.tagline}>
-        The party game about anything.
-      </AppText>
 
       <PressableScale
         onPress={() => router.push({ pathname: '/deck/[id]', params: { id: daily.id } })}
         accessibilityLabel="Daily challenge"
       >
         <View style={[styles.daily, { backgroundColor: daily.color }]}>
-          <AppText variant="caption" color="rgba(255,255,255,0.85)">
-            DAILY CHALLENGE
-          </AppText>
-          <AppText variant="title" color="#FFFFFF">
-            {daily.emoji} {daily.title}
-          </AppText>
-          <AppText variant="caption" color="rgba(255,255,255,0.9)">
-            {dailyClaimedToday
-              ? 'Done — come back tomorrow'
-              : `Play one round, earn ${DAILY_REWARD} coins`}
-          </AppText>
+          <View style={styles.dailyBody}>
+            <AppText variant="caption" color="rgba(255,255,255,0.8)">
+              DAILY CHALLENGE
+            </AppText>
+            <AppText variant="title" color="#FFFFFF">
+              {daily.title}
+            </AppText>
+            <AppText variant="caption" color="rgba(255,255,255,0.9)">
+              {dailyClaimedToday
+                ? 'Done — back tomorrow'
+                : `One round pays ${DAILY_REWARD} coins`}
+            </AppText>
+          </View>
+          <View style={styles.dailyIcon}>
+            <Icon name={daily.icon} size={40} color="rgba(255,255,255,0.9)" />
+          </View>
         </View>
       </PressableScale>
 
       <View style={styles.playWrap}>
-        <BigButton label="Play" icon="🎉" onPress={() => router.push('/decks')} />
+        <BigButton label="Play" icon="play" onPress={() => router.push('/decks')} />
       </View>
 
       <View style={styles.grid}>
-        <HomeTile emoji="✨" label="AI decks" onPress={() => router.push('/generate')} />
-        <HomeTile emoji="✍️" label="Create" onPress={() => router.push('/custom')} />
-        <HomeTile emoji="📥" label="Import" onPress={() => router.push('/import')} />
-        <HomeTile emoji="📊" label="Stats" onPress={() => router.push('/stats')} />
-        <HomeTile emoji="⚙️" label="Settings" onPress={() => router.push('/settings')} />
-        <HomeTile emoji="👑" label="Premium" onPress={() => router.push('/settings')} />
+        <HomeTile icon="sparkles" label="AI decks" hint="Any topic, instantly" onPress={() => router.push('/generate')} />
+        <HomeTile icon="pencil" label="Create" hint="Your own cards" onPress={() => router.push('/custom')} />
+        <HomeTile icon="download" label="Import" hint="Code or QR scan" onPress={() => router.push('/import')} />
+        <HomeTile icon="bar-chart" label="Stats" hint="Streaks & wins" onPress={() => router.push('/stats')} />
+        <HomeTile icon="crown" label="Premium" hint="Unlock everything" onPress={() => router.push('/settings')} />
+        <HomeTile icon="settings" label="Settings" hint="Timer, sound, theme" onPress={() => router.push('/settings')} />
       </View>
     </Screen>
   );
 }
 
 function HomeTile({
-  emoji,
+  icon,
   label,
+  hint,
   onPress,
 }: {
-  emoji: string;
+  icon: IconName;
   label: string;
+  hint: string;
   onPress: () => void;
 }) {
   const { colors } = useAppTheme();
   return (
     <PressableScale onPress={onPress} accessibilityLabel={label} style={styles.tileWrap}>
       <View style={[styles.tile, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-        <AppText style={styles.tileEmoji}>{emoji}</AppText>
-        <AppText variant="caption">{label}</AppText>
+        <View style={[styles.tileIcon, { backgroundColor: colors.surfaceAlt }]}>
+          <Icon name={icon} size={20} color={colors.accent} />
+        </View>
+        <View style={styles.tileText}>
+          <AppText variant="headline">{label}</AppText>
+          <AppText variant="caption" dim numberOfLines={1}>
+            {hint}
+          </AppText>
+        </View>
       </View>
     </PressableScale>
   );
@@ -92,32 +108,49 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     marginTop: 12,
+    marginBottom: 24,
   },
   coins: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
     paddingHorizontal: 14,
-    paddingVertical: 8,
+    paddingVertical: 9,
     borderRadius: 16,
   },
-  tagline: { marginTop: 4, marginBottom: 24 },
   daily: {
-    borderRadius: 24,
+    borderRadius: 22,
     padding: 20,
-    gap: 6,
-    marginBottom: 16,
+    marginBottom: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  dailyBody: { flex: 1, gap: 5 },
+  dailyIcon: {
+    width: 72,
+    height: 72,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255,255,255,0.14)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   playWrap: { marginBottom: 24 },
-  grid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12,
-  },
-  tileWrap: { width: '30.5%', flexGrow: 1 },
+  grid: { gap: 10 },
+  tileWrap: {},
   tile: {
-    borderRadius: 20,
-    borderWidth: 1,
+    flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 18,
-    gap: 8,
+    gap: 14,
+    borderRadius: 18,
+    borderWidth: 1,
+    padding: 14,
   },
-  tileEmoji: { fontSize: 30, lineHeight: 36 },
+  tileIcon: {
+    width: 42,
+    height: 42,
+    borderRadius: 13,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  tileText: { flex: 1, gap: 2 },
 });

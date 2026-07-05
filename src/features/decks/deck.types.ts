@@ -3,7 +3,8 @@ export type DeckSource = 'bundled' | 'custom' | 'generated';
 export interface Deck {
   id: string;
   title: string;
-  emoji: string;
+  /** Lucide icon name from the app's icon registry. */
+  icon: string;
   /** Accent color used across the deck's UI and the play screen. */
   color: string;
   description: string;
@@ -22,7 +23,7 @@ export type DeckData = Omit<Deck, 'source'>;
 export interface SharedDeckPayload {
   v: 1;
   title: string;
-  emoji: string;
+  icon: string;
   color: string;
   description: string;
   lang: string;

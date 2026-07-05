@@ -1,8 +1,8 @@
 {
   "id": "video-games",
   "title": "Video Games",
-  "emoji": "🎮",
-  "color": "#7C4DFF",
+  "icon": "gamepad",
+  "color": "#6E56CF",
   "description": "From retro arcades to today's biggest titles.",
   "lang": "en",
   "premium": true,

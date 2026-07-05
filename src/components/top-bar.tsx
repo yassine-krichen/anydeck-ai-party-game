@@ -5,6 +5,7 @@ import { StyleSheet, View } from 'react-native';
 import { useAppTheme } from '@/features/theme/use-app-theme';
 
 import { AppText } from './app-text';
+import { Icon } from './icon';
 import { PressableScale } from './pressable-scale';
 
 interface TopBarProps {
@@ -24,7 +25,7 @@ export function TopBar({ title, right }: TopBarProps) {
         accessibilityLabel="Go back"
         style={[styles.back, { backgroundColor: colors.surfaceAlt }]}
       >
-        <AppText variant="headline">‹</AppText>
+        <Icon name="chevron-left" size={22} color={colors.text} />
       </PressableScale>
       <AppText variant="title" numberOfLines={1} style={styles.title}>
         {title}

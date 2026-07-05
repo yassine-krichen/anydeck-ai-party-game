@@ -1,8 +1,8 @@
 {
   "id": "animals",
   "title": "Animals",
-  "emoji": "🦁",
-  "color": "#34C79A",
+  "icon": "paw-print",
+  "color": "#0F7B6C",
   "description": "Act it out! From house pets to deep-sea monsters.",
   "lang": "en",
   "premium": false,

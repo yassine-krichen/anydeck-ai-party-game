@@ -11,7 +11,7 @@ export function encodeDeck(deck: Deck): string {
   const payload: SharedDeckPayload = {
     v: 1,
     title: deck.title,
-    emoji: deck.emoji,
+    icon: deck.icon,
     color: deck.color,
     description: deck.description,
     lang: deck.lang,
@@ -38,8 +38,8 @@ export function decodeDeck(code: string): Deck | null {
     return {
       id: newDeckId('imported'),
       title: String(payload.title ?? 'Imported deck').slice(0, 60),
-      emoji: String(payload.emoji ?? '📦').slice(0, 8),
-      color: /^#[0-9A-Fa-f]{6}$/.test(String(payload.color)) ? payload.color : '#FF5470',
+      icon: String(payload.icon ?? 'layers').slice(0, 32),
+      color: /^#[0-9A-Fa-f]{6}$/.test(String(payload.color)) ? payload.color : '#E54D2E',
       description: String(payload.description ?? '').slice(0, 200),
       lang: String(payload.lang ?? 'en').slice(0, 8),
       premium: false,

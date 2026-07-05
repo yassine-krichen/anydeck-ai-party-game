@@ -32,7 +32,7 @@ export async function generateDeck(input: {
     const data = (await response.json()) as {
       error?: string;
       title?: string;
-      emoji?: string;
+      icon?: string;
       color?: string;
       description?: string;
       cards?: string[];
@@ -44,8 +44,8 @@ export async function generateDeck(input: {
       deck: {
         id: newDeckId('generated'),
         title: String(data.title ?? input.topic).slice(0, 60),
-        emoji: String(data.emoji ?? '✨').slice(0, 8),
-        color: /^#[0-9A-Fa-f]{6}$/.test(String(data.color)) ? String(data.color) : '#BF5AF2',
+        icon: String(data.icon ?? 'sparkles').slice(0, 32),
+        color: /^#[0-9A-Fa-f]{6}$/.test(String(data.color)) ? String(data.color) : '#6E56CF',
         description: String(data.description ?? `AI deck about ${input.topic}`),
         lang: input.lang,
         premium: false,

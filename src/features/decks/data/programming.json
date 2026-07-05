@@ -1,8 +1,8 @@
 {
   "id": "programming",
   "title": "Programming",
-  "emoji": "💻",
-  "color": "#5865F2",
+  "icon": "terminal",
+  "color": "#3E63DD",
   "description": "For dev squads — languages, tools, and daily suffering.",
   "lang": "en",
   "premium": true,

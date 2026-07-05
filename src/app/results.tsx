@@ -5,10 +5,12 @@ import { Share, StyleSheet, View } from 'react-native';
 import { AppText } from '@/components/app-text';
 import { BigButton } from '@/components/big-button';
 import { Confetti } from '@/components/confetti';
+import { Icon } from '@/components/icon';
 import { Screen } from '@/components/screen';
 import { getBundledDeck } from '@/features/decks/deck-registry';
 import { useMatch } from '@/features/game/match-store';
 import { recordMatch } from '@/features/stats/stats-storage';
+import { rankColors } from '@/features/theme/colors';
 import { useAppTheme } from '@/features/theme/use-app-theme';
 
 export default function ResultsScreen() {
@@ -48,9 +50,9 @@ export default function ResultsScreen() {
   const onShare = () => {
     const lines =
       config.mode === 'quick'
-        ? `I scored ${lastRound.points} in AnyDeck! 🎉`
+        ? `I scored ${lastRound.points} in AnyDeck!`
         : `AnyDeck match results:\n${standings
-            .map((s, i) => `${i === 0 ? '🏆' : `${i + 1}.`} ${s.entry} — ${s.points}`)
+            .map((s, i) => `${i + 1}. ${s.entry} — ${s.points}`)
             .join('\n')}`;
     Share.share({ message: `${lines}\n\nThe party game about anything.` });
   };
@@ -74,9 +76,12 @@ export default function ResultsScreen() {
           {isMatchOver ? 'FINAL RESULTS' : `ROUND ${rounds.length} OF ${totalTurns}`}
         </AppText>
         {isMatchOver && winner && config.mode !== 'quick' ? (
-          <AppText variant="display" center>
-            🏆 {winner.entry} wins!
-          </AppText>
+          <View style={styles.winnerRow}>
+            <Icon name="trophy" size={30} color={colors.gold} />
+            <AppText variant="display" center>
+              {winner.entry} wins!
+            </AppText>
+          </View>
         ) : (
           <AppText variant="display" center>
             {lastRound.points} point{lastRound.points === 1 ? '' : 's'}
@@ -84,8 +89,8 @@ export default function ResultsScreen() {
         )}
         <AppText dim>
           {lastRound.entry} · best streak {lastRound.bestStreak}
-          {coins && Number(coins) > 0 ? ` · +${coins} 🪙` : ''}
-          {daily === '1' ? ' · daily bonus +50 🪙' : ''}
+          {coins && Number(coins) > 0 ? ` · +${coins} coins` : ''}
+          {daily === '1' ? ' · daily bonus +50' : ''}
         </AppText>
       </View>
 
@@ -93,8 +98,21 @@ export default function ResultsScreen() {
         <View style={[styles.standings, { backgroundColor: colors.surface, borderColor: colors.border }]}>
           {standings.map((s, i) => (
             <View key={s.entry} style={styles.standingRow}>
-              <AppText variant="headline">
-                {i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i + 1}.`} {s.entry}
+              <View
+                style={[
+                  styles.rankBadge,
+                  { backgroundColor: rankColors[i] ?? colors.surfaceAlt },
+                ]}
+              >
+                <AppText
+                  variant="caption"
+                  color={i < rankColors.length ? '#1B1B20' : colors.textDim}
+                >
+                  {i + 1}
+                </AppText>
+              </View>
+              <AppText variant="headline" style={styles.standingName} numberOfLines={1}>
+                {s.entry}
               </AppText>
               <AppText variant="headline">{s.points}</AppText>
             </View>
@@ -112,12 +130,18 @@ export default function ResultsScreen() {
             style={[
               styles.cardChip,
               {
-                backgroundColor: r.correct ? 'rgba(48,209,88,0.16)' : colors.surfaceAlt,
+                backgroundColor: r.correct ? 'rgba(76,175,109,0.16)' : colors.surfaceAlt,
               },
             ]}
           >
+            <Icon
+              name={r.correct ? 'check' : 'x'}
+              size={12}
+              color={r.correct ? colors.success : colors.textDim}
+              strokeWidth={3}
+            />
             <AppText variant="caption" color={r.correct ? colors.success : colors.textDim}>
-              {r.correct ? '✓' : '✗'} {r.card}
+              {r.card}
             </AppText>
           </View>
         ))}
@@ -130,7 +154,7 @@ export default function ResultsScreen() {
         {!isMatchOver ? (
           <BigButton
             label={`Next up: ${nextEntry}`}
-            icon="👉"
+            icon="chevron-right"
             color={deckColor}
             textColor="#FFFFFF"
             onPress={() => {
@@ -139,9 +163,9 @@ export default function ResultsScreen() {
             }}
           />
         ) : (
-          <BigButton label="Play again" icon="🔁" onPress={onPlayAgain} />
+          <BigButton label="Play again" icon="rotate-ccw" onPress={onPlayAgain} />
         )}
-        <BigButton variant="secondary" icon="📤" label="Share score" onPress={onShare} />
+        <BigButton variant="secondary" icon="share" label="Share score" onPress={onShare} />
         <BigButton variant="ghost" label="Home" onPress={onHome} />
       </View>
     </Screen>
@@ -157,10 +181,22 @@ const styles = StyleSheet.create({
     gap: 12,
     marginBottom: 20,
   },
-  standingRow: { flexDirection: 'row', justifyContent: 'space-between' },
+  winnerRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  standingRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  standingName: { flex: 1 },
+  rankBadge: {
+    width: 26,
+    height: 26,
+    borderRadius: 9,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   cardsLabel: { marginBottom: 8 },
   cards: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 24 },
   cardChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 12,

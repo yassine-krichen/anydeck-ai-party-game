@@ -2,10 +2,7 @@
   "name": "anydeck-server",
   "version": "1.0.0",
   "private": true,
-  "description": "AnyDeck AI deck generation API (deploy to Vercel)",
-  "dependencies": {
-    "@anthropic-ai/sdk": "^0.90.0"
-  },
+  "description": "AnyDeck AI deck generation API — Gemini 2.5 Flash, zero dependencies (deploy to Vercel)",
   "devDependencies": {
     "typescript": "^5.7.0",
     "@types/node": "^22.0.0"

@@ -94,7 +94,7 @@ export default function SettingsScreen() {
             />
           ))}
         </View>
-        <RowLabel label={`Theme color · 🪙 ${economy.state.coins} available`} />
+        <RowLabel label={`Theme color · ${economy.state.coins} coins available`} />
         <View style={styles.swatches}>
           {accentThemes.map((theme) => {
             const owned = economy.state.ownedAccentIds.includes(theme.id);
@@ -126,7 +126,7 @@ export default function SettingsScreen() {
 
       <Section title="ANYDECK+">
         {economy.state.subscriptionActive ? (
-          <AppText>👑 Subscribed — every deck is unlocked. Thank you!</AppText>
+          <AppText>Subscribed — every deck is unlocked. Thank you!</AppText>
         ) : (
           <>
             <AppText dim style={styles.premiumPitch}>
@@ -134,7 +134,7 @@ export default function SettingsScreen() {
             </AppText>
             <BigButton
               label="Get AnyDeck+"
-              icon="👑"
+              icon="crown"
               onPress={() => economy.purchaseSubscription()}
             />
           </>

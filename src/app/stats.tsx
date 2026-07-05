@@ -28,7 +28,7 @@ export default function StatsScreen() {
     entries.sort((a, b) => b[1] - a[1]);
     const [id, plays] = entries[0];
     const deck = getBundledDeck(id);
-    return { title: deck ? `${deck.emoji} ${deck.title}` : 'Custom deck', plays };
+    return { title: deck ? deck.title : 'Custom deck', plays };
   }, [stats.deckPlays]);
 
   const playerRows = useMemo(
@@ -51,7 +51,7 @@ export default function StatsScreen() {
     { label: 'Correct guesses', value: String(stats.totalCorrect) },
     { label: 'Accuracy', value: `${accuracy}%` },
     { label: 'Best round', value: String(stats.bestRoundScore) },
-    { label: 'Best streak', value: `${stats.bestStreak} 🔥` },
+    { label: 'Best streak', value: String(stats.bestStreak) },
   ];
 
   return (

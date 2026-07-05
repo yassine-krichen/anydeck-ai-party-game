@@ -4,6 +4,7 @@ import { StyleSheet, TextInput, View } from 'react-native';
 
 import { AppText } from '@/components/app-text';
 import { DeckTile } from '@/components/deck-tile';
+import { Icon } from '@/components/icon';
 import { PressableScale } from '@/components/pressable-scale';
 import { Screen } from '@/components/screen';
 import { TopBar } from '@/components/top-bar';
@@ -59,17 +60,17 @@ export default function DecksScreen() {
   return (
     <Screen>
       <TopBar title="Pick a deck" />
-      <TextInput
-        value={query}
-        onChangeText={setQuery}
-        placeholder="Search decks"
-        placeholderTextColor={colors.textDim}
-        style={[
-          styles.search,
-          { backgroundColor: colors.surfaceAlt, color: colors.text },
-        ]}
-        accessibilityLabel="Search decks"
-      />
+      <View style={[styles.searchRow, { backgroundColor: colors.surfaceAlt }]}>
+        <Icon name="search" size={18} color={colors.textDim} />
+        <TextInput
+          value={query}
+          onChangeText={setQuery}
+          placeholder="Search decks"
+          placeholderTextColor={colors.textDim}
+          style={[styles.search, { color: colors.text }]}
+          accessibilityLabel="Search decks"
+        />
+      </View>
       <View style={styles.filters}>
         {filters.map((f) => (
           <PressableScale key={f.id} onPress={() => setFilter(f.id)}>
@@ -111,12 +112,19 @@ export default function DecksScreen() {
 }
 
 const styles = StyleSheet.create({
-  search: {
+  searchRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
     height: 48,
     borderRadius: 16,
     paddingHorizontal: 16,
-    fontSize: 16,
     marginBottom: 12,
+  },
+  search: {
+    flex: 1,
+    fontSize: 16,
+    height: '100%',
   },
   filters: { flexDirection: 'row', gap: 8, marginBottom: 16, flexWrap: 'wrap' },
   chip: {

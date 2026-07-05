@@ -1,8 +1,8 @@
 {
   "id": "food",
   "title": "Food & Drinks",
-  "emoji": "🍕",
-  "color": "#FF9F0A",
+  "icon": "pizza",
+  "color": "#E8590C",
   "description": "Dishes, snacks, and drinks from every kitchen on Earth.",
   "lang": "en",
   "premium": false,

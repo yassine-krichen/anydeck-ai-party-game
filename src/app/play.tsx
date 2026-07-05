@@ -12,6 +12,7 @@ import Animated, {
 
 import { AppText } from '@/components/app-text';
 import { BigButton } from '@/components/big-button';
+import { Icon } from '@/components/icon';
 import { useGameSounds } from '@/features/audio/use-game-sounds';
 import { getDeck } from '@/features/decks/deck-storage';
 import { dailyChallengeDeck } from '@/features/decks/deck-registry';
@@ -64,9 +65,12 @@ export default function PlayScreen() {
   if (phase === 'handoff') {
     return (
       <View style={[styles.handoff, { backgroundColor: deck.color }]}>
-        <AppText variant="caption" color="rgba(255,255,255,0.85)">
-          {deck.emoji} {deck.title.toUpperCase()}
-        </AppText>
+        <View style={styles.handoffDeck}>
+          <Icon name={deck.icon} size={16} color="rgba(255,255,255,0.85)" />
+          <AppText variant="caption" color="rgba(255,255,255,0.85)">
+            {deck.title.toUpperCase()}
+          </AppText>
+        </View>
         <AppText variant="display" color="#FFFFFF" center>
           {config.mode === 'quick' ? 'Get ready' : `Pass the phone to ${currentEntry}`}
         </AppText>
@@ -218,8 +222,9 @@ function Round({ deck }: { deck: Deck }) {
         <>
           <View style={styles.hud}>
             <View style={styles.hudPill}>
+              <Icon name="check" size={18} color="#FFFFFF" strokeWidth={3} />
               <AppText variant="headline" color="#FFFFFF">
-                ✓ {engine.points}
+                {engine.points}
               </AppText>
             </View>
             <View style={[styles.hudPill, engine.secondsLeft <= 5 && styles.hudUrgent]}>
@@ -228,9 +233,14 @@ function Round({ deck }: { deck: Deck }) {
               </AppText>
             </View>
             <View style={styles.hudPill}>
-              <AppText variant="headline" color="#FFFFFF">
-                {config && config.maxSkips > 0 ? `⤴ ${engine.skipsLeft}` : '⤴ ∞'}
-              </AppText>
+              <Icon name="skip-forward" size={16} color="#FFFFFF" />
+              {config && config.maxSkips > 0 ? (
+                <AppText variant="headline" color="#FFFFFF">
+                  {engine.skipsLeft}
+                </AppText>
+              ) : (
+                <Icon name="infinity" size={18} color="#FFFFFF" />
+              )}
             </View>
           </View>
 
@@ -263,9 +273,7 @@ function Round({ deck }: { deck: Deck }) {
 
       {engine.phase === 'ended' && (
         <View style={styles.center}>
-          <AppText style={styles.countdown} color="#FFFFFF">
-            ⏱
-          </AppText>
+          <Icon name="timer" size={88} color="#FFFFFF" strokeWidth={1.75} />
           <AppText variant="display" color="#FFFFFF">
             Time's up!
           </AppText>
@@ -294,9 +302,12 @@ function FeedbackFlash({ kind }: { kind: 'correct' | 'skip' }) {
         { backgroundColor: kind === 'correct' ? 'rgba(48,209,88,0.85)' : 'rgba(255,159,10,0.85)' },
       ]}
     >
-      <AppText style={styles.flashIcon} color="#FFFFFF">
-        {kind === 'correct' ? '✓' : '⤴'}
-      </AppText>
+      <Icon
+        name={kind === 'correct' ? 'check' : 'skip-forward'}
+        size={120}
+        color="#FFFFFF"
+        strokeWidth={2.5}
+      />
     </Animated.View>
   );
 }
@@ -310,6 +321,7 @@ const styles = StyleSheet.create({
     padding: 32,
     gap: 14,
   },
+  handoffDeck: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   handoffHint: { marginTop: 4 },
   handoffButton: { alignSelf: 'stretch', maxWidth: 420, width: '100%', marginTop: 16 },
   round: { flex: 1 },
@@ -332,6 +344,9 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     minWidth: 72,
     alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+    gap: 7,
   },
   hudUrgent: { backgroundColor: 'rgba(255,69,58,0.75)' },
   touchZones: {
@@ -349,5 +364,4 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingBottom: 18,
   },
-  flashIcon: { fontSize: 110, fontWeight: '900', lineHeight: 120 },
 });

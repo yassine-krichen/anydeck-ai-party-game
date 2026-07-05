@@ -3,6 +3,7 @@ import { StyleSheet, useWindowDimensions, View } from 'react-native';
 import Animated, {
   Easing,
   useAnimatedStyle,
+  useReducedMotion,
   useSharedValue,
   withDelay,
   withRepeat,
@@ -65,6 +66,7 @@ function Piece({ spec, height }: { spec: PieceSpec; height: number }) {
 /** Full-screen falling confetti. Mount to celebrate, unmount to stop. */
 export function Confetti({ colors }: ConfettiProps) {
   const { width, height } = useWindowDimensions();
+  const reducedMotion = useReducedMotion();
 
   const pieces = useMemo<PieceSpec[]>(
     () =>
@@ -78,6 +80,8 @@ export function Confetti({ colors }: ConfettiProps) {
       })),
     [colors, width]
   );
+
+  if (reducedMotion) return null;
 
   return (
     <View pointerEvents="none" style={StyleSheet.absoluteFill}>

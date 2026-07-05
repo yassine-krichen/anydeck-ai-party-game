@@ -52,7 +52,7 @@ export default function GenerateScreen() {
 
   return (
     <Screen>
-      <TopBar title="✨ AI decks" />
+      <TopBar title="AI decks" />
       <AppText dim style={styles.pitch}>
         Type any topic — your friend group's inside jokes, your city, a niche fandom — and get
         a playable deck in seconds.
@@ -135,7 +135,12 @@ export default function GenerateScreen() {
             <AppText dim>Building your deck…</AppText>
           </View>
         ) : (
-          <BigButton label="Generate deck" icon="✨" onPress={onGenerate} disabled={topic.trim().length === 0} />
+          <BigButton
+            label="Generate deck"
+            icon="sparkles"
+            onPress={onGenerate}
+            disabled={topic.trim().length === 0}
+          />
         )}
       </View>
     </Screen>

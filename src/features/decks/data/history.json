@@ -1,8 +1,8 @@
 {
   "id": "history",
   "title": "History",
-  "emoji": "🏛️",
-  "color": "#C9A227",
+  "icon": "landmark",
+  "color": "#9E6C3B",
   "description": "Empires, revolutions, and the people who shaped the world.",
   "lang": "en",
   "premium": true,

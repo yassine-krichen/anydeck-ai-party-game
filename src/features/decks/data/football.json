@@ -1,8 +1,8 @@
 {
   "id": "football",
   "title": "Football",
-  "emoji": "⚽",
-  "color": "#30D158",
+  "icon": "trophy",
+  "color": "#3D9A50",
   "description": "Legends, clubs, and moments that stopped the world.",
   "lang": "en",
   "premium": true,

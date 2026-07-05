@@ -4,6 +4,7 @@ import { StyleSheet, TextInput, View } from 'react-native';
 
 import { AppText } from '@/components/app-text';
 import { BigButton } from '@/components/big-button';
+import { Icon } from '@/components/icon';
 import { Screen } from '@/components/screen';
 import { TopBar } from '@/components/top-bar';
 import { decodeDeck } from '@/features/decks/deck-codec';
@@ -65,16 +66,19 @@ export default function ImportScreen() {
 
       {preview && (
         <View style={[styles.preview, { backgroundColor: preview.color }]}>
-          <AppText variant="title" color="#FFFFFF">
-            {preview.emoji} {preview.title}
-          </AppText>
-          <AppText variant="caption" color="rgba(255,255,255,0.9)">
-            {preview.cards.length} cards
-          </AppText>
+          <Icon name={preview.icon} size={26} color="#FFFFFF" />
+          <View style={styles.previewText}>
+            <AppText variant="title" color="#FFFFFF">
+              {preview.title}
+            </AppText>
+            <AppText variant="caption" color="rgba(255,255,255,0.9)">
+              {preview.cards.length} cards
+            </AppText>
+          </View>
         </View>
       )}
 
-      <BigButton label="Add to my decks" icon="📥" disabled={!preview} onPress={onImport} />
+      <BigButton label="Add to my decks" icon="download" disabled={!preview} onPress={onImport} />
     </Screen>
   );
 }
@@ -90,9 +94,12 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   preview: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 14,
     borderRadius: 20,
     padding: 18,
-    gap: 4,
     marginBottom: 16,
   },
+  previewText: { gap: 3 },
 });

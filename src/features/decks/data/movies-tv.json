@@ -1,8 +1,8 @@
 {
   "id": "movies-tv",
   "title": "Movies & TV",
-  "emoji": "🎬",
-  "color": "#E50914",
+  "icon": "clapperboard",
+  "color": "#CE2C31",
   "description": "Blockbusters, series, and characters everyone yells about.",
   "lang": "en",
   "premium": true,

@@ -1,8 +1,8 @@
 {
   "id": "science",
   "title": "Science",
-  "emoji": "🔬",
-  "color": "#64D2FF",
+  "icon": "atom",
+  "color": "#0E7490",
   "description": "Discoveries, scientists, and the weird stuff of the universe.",
   "lang": "en",
   "premium": true,

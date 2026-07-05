@@ -4,14 +4,26 @@ import { Alert, StyleSheet, TextInput, View } from 'react-native';
 
 import { AppText } from '@/components/app-text';
 import { BigButton } from '@/components/big-button';
+import { Icon, type IconName } from '@/components/icon';
 import { PressableScale } from '@/components/pressable-scale';
 import { Screen } from '@/components/screen';
 import { TopBar } from '@/components/top-bar';
 import { getDeck, newDeckId, saveUserDeck } from '@/features/decks/deck-storage';
 import { useAppTheme } from '@/features/theme/use-app-theme';
 
-const emojiOptions = ['🎉', '🎯', '🧠', '🎵', '🏆', '🌍', '🍕', '👻', '💼', '🎓'];
-const colorOptions = ['#FF5470', '#0A84FF', '#BF5AF2', '#30D158', '#FF9F0A', '#5865F2'];
+const iconOptions: IconName[] = [
+  'party-popper',
+  'music',
+  'heart',
+  'star',
+  'zap',
+  'ghost',
+  'briefcase',
+  'graduation-cap',
+  'map-pin',
+  'camera',
+];
+const colorOptions = ['#E54D2E', '#0B68CB', '#6E56CF', '#3D9A50', '#E8590C', '#0F7B6C'];
 
 export default function CustomDeckScreen() {
   const { id } = useLocalSearchParams<{ id?: string }>();
@@ -20,8 +32,8 @@ export default function CustomDeckScreen() {
 
   const [deckId, setDeckId] = useState<string | null>(null);
   const [title, setTitle] = useState('');
-  const [emoji, setEmoji] = useState('🎉');
-  const [color, setColor] = useState('#FF5470');
+  const [icon, setIcon] = useState<string>('party-popper');
+  const [color, setColor] = useState('#E54D2E');
   const [cardsText, setCardsText] = useState('');
 
   useEffect(() => {
@@ -30,7 +42,7 @@ export default function CustomDeckScreen() {
       if (!deck || deck.source === 'bundled') return;
       setDeckId(deck.id);
       setTitle(deck.title);
-      setEmoji(deck.emoji);
+      setIcon(deck.icon);
       setColor(deck.color);
       setCardsText(deck.cards.join('\n'));
     });
@@ -53,7 +65,7 @@ export default function CustomDeckScreen() {
     await saveUserDeck({
       id: deckId ?? newDeckId('custom'),
       title: title.trim(),
-      emoji,
+      icon,
       color,
       description: `Custom deck · ${cards.length} cards`,
       lang: 'en',
@@ -85,23 +97,26 @@ export default function CustomDeckScreen() {
         ICON & COLOR
       </AppText>
       <View style={styles.pickerRow}>
-        {emojiOptions.map((option) => (
-          <PressableScale key={option} onPress={() => setEmoji(option)}>
+        {iconOptions.map((option) => (
+          <PressableScale key={option} onPress={() => setIcon(option)} accessibilityLabel={option}>
             <View
               style={[
-                styles.emojiOption,
-                { backgroundColor: colors.surfaceAlt },
-                emoji === option && { backgroundColor: color },
+                styles.iconOption,
+                { backgroundColor: icon === option ? color : colors.surfaceAlt },
               ]}
             >
-              <AppText style={styles.emojiText}>{option}</AppText>
+              <Icon
+                name={option}
+                size={20}
+                color={icon === option ? '#FFFFFF' : colors.textDim}
+              />
             </View>
           </PressableScale>
         ))}
       </View>
       <View style={styles.pickerRow}>
         {colorOptions.map((option) => (
-          <PressableScale key={option} onPress={() => setColor(option)}>
+          <PressableScale key={option} onPress={() => setColor(option)} accessibilityLabel={option}>
             <View
               style={[
                 styles.colorOption,
@@ -120,7 +135,7 @@ export default function CustomDeckScreen() {
         value={cardsText}
         onChangeText={setCardsText}
         multiline
-        placeholder={'Shrek\nThe Eiffel Tower\nYour mom’s couscous'}
+        placeholder={'Shrek\nThe Eiffel Tower\nThat one legendary road trip'}
         placeholderTextColor={colors.textDim}
         style={[
           styles.input,
@@ -130,7 +145,7 @@ export default function CustomDeckScreen() {
         accessibilityLabel="Deck cards, one per line"
       />
 
-      <BigButton label="Save deck" icon="💾" onPress={onSave} />
+      <BigButton label="Save deck" icon="check" onPress={onSave} />
     </Screen>
   );
 }
@@ -145,14 +160,13 @@ const styles = StyleSheet.create({
   },
   cardsInput: { minHeight: 200, textAlignVertical: 'top', marginBottom: 20 },
   pickerRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 8 },
-  emojiOption: {
+  iconOption: {
     width: 44,
     height: 44,
     borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  emojiText: { fontSize: 22, lineHeight: 28 },
   colorOption: { width: 44, height: 44, borderRadius: 14 },
   colorActive: { borderWidth: 3, borderColor: '#FFFFFF' },
 });
