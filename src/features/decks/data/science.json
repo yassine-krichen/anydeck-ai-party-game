@@ -1,0 +1,21 @@
+{
+  "id": "science",
+  "title": "Science",
+  "emoji": "🔬",
+  "color": "#64D2FF",
+  "description": "Discoveries, scientists, and the weird stuff of the universe.",
+  "lang": "en",
+  "premium": true,
+  "cards": [
+    "Albert Einstein", "A black hole", "DNA", "Gravity", "Isaac Newton",
+    "The Big Bang", "A microscope", "Photosynthesis", "Marie Curie", "An atom",
+    "Electricity", "The solar system", "A vaccine", "Charles Darwin", "A volcano",
+    "The periodic table", "An eclipse", "Nikola Tesla", "A magnet", "Evolution",
+    "A telescope", "The speed of light", "Stephen Hawking", "Bacteria", "A comet",
+    "Oxygen", "A laser", "The food chain", "An earthquake", "Antibiotics",
+    "A satellite", "The water cycle", "Galileo Galilei", "A neuron", "Radiation",
+    "The immune system", "A fossil", "Artificial intelligence", "A tornado", "Cloning",
+    "The Milky Way", "A chemical reaction", "Mars", "A supernova", "Friction",
+    "The Northern Lights", "A microchip", "Global warming", "A parachute", "X-rays"
+  ]
+}

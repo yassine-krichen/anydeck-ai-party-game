@@ -1,0 +1,21 @@
+{
+  "id": "programming",
+  "title": "Programming",
+  "emoji": "💻",
+  "color": "#5865F2",
+  "description": "For dev squads — languages, tools, and daily suffering.",
+  "lang": "en",
+  "premium": true,
+  "cards": [
+    "JavaScript", "A merge conflict", "Python", "Stack Overflow", "A null pointer",
+    "Git", "The cloud", "A memory leak", "Linux", "Spaghetti code",
+    "React", "A code review", "SQL", "The blue screen of death", "An infinite loop",
+    "Docker", "Rubber duck debugging", "A hackathon", "ChatGPT", "Dark mode",
+    "A firewall", "Java", "The terminal", "A bug in production", "CSS",
+    "A standup meeting", "Bitcoin", "A keyboard warrior", "Excel", "A VPN",
+    "Open source", "A 404 error", "TypeScript", "Ctrl+C Ctrl+V", "A database",
+    "The WiFi password", "A junior developer", "Vim", "A phishing email", "GitHub",
+    "Two-factor authentication", "A regex", "The intern who deleted prod", "An API", "Legacy code",
+    "A mechanical keyboard", "The mainframe", "A deadline", "Unit tests", "A caffeine addiction"
+  ]
+}

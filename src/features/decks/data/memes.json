@@ -1,0 +1,21 @@
+{
+  "id": "memes",
+  "title": "Memes & Internet",
+  "emoji": "😂",
+  "color": "#FFD60A",
+  "description": "Internet culture — describe it without dying of laughter.",
+  "lang": "en",
+  "premium": true,
+  "cards": [
+    "Rickrolling", "The distracted boyfriend", "Doge", "A TikTok dance", "Grumpy cat",
+    "The Rock's eyebrow", "Ratio", "Keyboard smashing", "Shrek is love", "An influencer apology video",
+    "This is fine (dog in fire)", "The Ice Bucket Challenge", "Karen", "Sigma male", "A cat filter lawyer",
+    "Stonks", "The mocking SpongeBob", "NPC", "Ghosting someone", "The Harlem Shake",
+    "Touch grass", "A Discord moderator", "Gangnam Style", "The friend zone", "Baby Yoda",
+    "Slaying", "The two buttons meme", "A 3 AM conspiracy video", "Pepe the frog", "Main character energy",
+    "The galaxy brain", "An unboxing video", "Woman yelling at a cat", "Rizz", "The Area 51 raid",
+    "A speedrun", "The gigachad", "Vibing", "Hide the pain Harold", "Cancel culture",
+    "The Wednesday dance", "A mukbang", "Sad violin music", "The default dance", "Being extremely online",
+    "The skull emoji", "A finsta", "Backrooms", "The GOAT", "Deleting your search history"
+  ]
+}

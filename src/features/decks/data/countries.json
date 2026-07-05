@@ -1,0 +1,21 @@
+{
+  "id": "countries",
+  "title": "Countries & Places",
+  "emoji": "🌍",
+  "color": "#0A84FF",
+  "description": "Countries, cities, and landmarks around the globe.",
+  "lang": "en",
+  "premium": false,
+  "cards": [
+    "Japan", "The Eiffel Tower", "Brazil", "New York City", "Egypt",
+    "The Great Wall of China", "Italy", "The Sahara Desert", "Australia", "London",
+    "The Statue of Liberty", "Tunisia", "Mount Everest", "Canada", "Dubai",
+    "The Amazon Rainforest", "Mexico", "Venice", "India", "The North Pole",
+    "Morocco", "The Grand Canyon", "Germany", "Tokyo", "Greece",
+    "The Colosseum", "Russia", "Istanbul", "Spain", "The Bermuda Triangle",
+    "Switzerland", "Las Vegas", "South Korea", "The Taj Mahal", "Argentina",
+    "Hawaii", "The Vatican", "Nigeria", "Amsterdam", "The Dead Sea",
+    "Iceland", "Rio de Janeiro", "Turkey", "Machu Picchu", "Singapore",
+    "The Alps", "Portugal", "Cairo", "Thailand", "Niagara Falls"
+  ]
+}

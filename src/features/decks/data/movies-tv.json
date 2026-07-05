@@ -1,0 +1,21 @@
+{
+  "id": "movies-tv",
+  "title": "Movies & TV",
+  "emoji": "🎬",
+  "color": "#E50914",
+  "description": "Blockbusters, series, and characters everyone yells about.",
+  "lang": "en",
+  "premium": true,
+  "cards": [
+    "The Godfather", "Stranger Things", "Darth Vader", "Breaking Bad", "Frozen",
+    "Game of Thrones", "Forrest Gump", "The Office", "Jack Sparrow", "Squid Game",
+    "Jurassic Park", "Friends", "The Avengers", "Shrek", "The Simpsons",
+    "Inception", "Wednesday Addams", "Rocky Balboa", "Money Heist", "The Lion King",
+    "Pulp Fiction", "SpongeBob", "James Bond", "The Matrix", "Homer Simpson",
+    "Gladiator", "Peaky Blinders", "E.T.", "The Walking Dead", "Toy Story",
+    "Hannibal Lecter", "Sherlock Holmes", "Avatar", "Black Mirror", "Rambo",
+    "The Titanic (movie)", "Narcos", "Yoda", "The Big Bang Theory", "Joker",
+    "Indiana Jones", "La Casa de Papel", "Interstellar", "Mr. Bean", "Terminator",
+    "The Crown", "Kung Fu Panda", "House of Cards", "Deadpool", "Oppenheimer"
+  ]
+}

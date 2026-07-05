@@ -1,0 +1,21 @@
+{
+  "id": "food",
+  "title": "Food & Drinks",
+  "emoji": "🍕",
+  "color": "#FF9F0A",
+  "description": "Dishes, snacks, and drinks from every kitchen on Earth.",
+  "lang": "en",
+  "premium": false,
+  "cards": [
+    "Pizza", "Sushi", "Couscous", "Chocolate cake", "Tacos",
+    "Spaghetti", "A cheeseburger", "Croissant", "Ice cream", "Shawarma",
+    "Pancakes", "Ramen", "French fries", "Paella", "Hummus",
+    "A hot dog", "Lasagna", "Popcorn", "Butter chicken", "Falafel",
+    "Donuts", "Fried chicken", "Guacamole", "A milkshake", "Kebab",
+    "Cereal", "Dumplings", "Nutella", "A burrito", "Pad Thai",
+    "Onion rings", "Cheesecake", "Espresso", "Biryani", "Nachos",
+    "A baguette", "Mac and cheese", "Bubble tea", "Tiramisu", "Instant noodles",
+    "Scrambled eggs", "A smoothie", "Waffles", "Brik", "Mint tea",
+    "A caesar salad", "Churros", "Peanut butter", "Fish and chips", "Baklava"
+  ]
+}

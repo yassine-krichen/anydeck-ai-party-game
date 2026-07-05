@@ -1,98 +1,123 @@
-import * as Device from 'expo-device';
-import { Platform, StyleSheet } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
+import { StyleSheet, View } from 'react-native';
 
-import { AnimatedIcon } from '@/components/animated-icon';
-import { HintRow } from '@/components/hint-row';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { WebBadge } from '@/components/web-badge';
-import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
+import { AppText } from '@/components/app-text';
+import { BigButton } from '@/components/big-button';
+import { PressableScale } from '@/components/pressable-scale';
+import { Screen } from '@/components/screen';
+import { dailyChallengeDeck } from '@/features/decks/deck-registry';
+import { useEconomy } from '@/features/economy/economy';
+import { useAppTheme } from '@/features/theme/use-app-theme';
 
-function getDevMenuHint() {
-  if (Platform.OS === 'web') {
-    return <ThemedText type="small">use browser devtools</ThemedText>;
-  }
-  if (Device.isDevice) {
-    return (
-      <ThemedText type="small">
-        shake device or press <ThemedText type="code">m</ThemedText> in terminal
-      </ThemedText>
-    );
-  }
-  const shortcut = Platform.OS === 'android' ? 'cmd+m (or ctrl+m)' : 'cmd+d';
+const DAILY_REWARD = 50;
+
+export default function HomeScreen() {
+  const router = useRouter();
+  const { colors } = useAppTheme();
+  const { state, dailyClaimedToday } = useEconomy();
+  const daily = dailyChallengeDeck();
+
   return (
-    <ThemedText type="small">
-      press <ThemedText type="code">{shortcut}</ThemedText>
-    </ThemedText>
+    <Screen>
+      <View style={styles.header}>
+        <AppText variant="display">
+          Any<AppText variant="display" color={colors.accent}>Deck</AppText>
+        </AppText>
+        <View style={[styles.coins, { backgroundColor: colors.surfaceAlt }]}>
+          <AppText variant="headline">🪙 {state.coins}</AppText>
+        </View>
+      </View>
+      <AppText dim style={styles.tagline}>
+        The party game about anything.
+      </AppText>
+
+      <PressableScale
+        onPress={() => router.push({ pathname: '/deck/[id]', params: { id: daily.id } })}
+        accessibilityLabel="Daily challenge"
+      >
+        <View style={[styles.daily, { backgroundColor: daily.color }]}>
+          <AppText variant="caption" color="rgba(255,255,255,0.85)">
+            DAILY CHALLENGE
+          </AppText>
+          <AppText variant="title" color="#FFFFFF">
+            {daily.emoji} {daily.title}
+          </AppText>
+          <AppText variant="caption" color="rgba(255,255,255,0.9)">
+            {dailyClaimedToday
+              ? 'Done — come back tomorrow'
+              : `Play one round, earn ${DAILY_REWARD} coins`}
+          </AppText>
+        </View>
+      </PressableScale>
+
+      <View style={styles.playWrap}>
+        <BigButton label="Play" icon="🎉" onPress={() => router.push('/decks')} />
+      </View>
+
+      <View style={styles.grid}>
+        <HomeTile emoji="✨" label="AI decks" onPress={() => router.push('/generate')} />
+        <HomeTile emoji="✍️" label="Create" onPress={() => router.push('/custom')} />
+        <HomeTile emoji="📥" label="Import" onPress={() => router.push('/import')} />
+        <HomeTile emoji="📊" label="Stats" onPress={() => router.push('/stats')} />
+        <HomeTile emoji="⚙️" label="Settings" onPress={() => router.push('/settings')} />
+        <HomeTile emoji="👑" label="Premium" onPress={() => router.push('/settings')} />
+      </View>
+    </Screen>
   );
 }
 
-export default function HomeScreen() {
+function HomeTile({
+  emoji,
+  label,
+  onPress,
+}: {
+  emoji: string;
+  label: string;
+  onPress: () => void;
+}) {
+  const { colors } = useAppTheme();
   return (
-    <ThemedView style={styles.container}>
-      <SafeAreaView style={styles.safeArea}>
-        <ThemedView style={styles.heroSection}>
-          <AnimatedIcon />
-          <ThemedText type="title" style={styles.title}>
-            Welcome to&nbsp;Expo
-          </ThemedText>
-        </ThemedView>
-
-        <ThemedText type="code" style={styles.code}>
-          get started
-        </ThemedText>
-
-        <ThemedView type="backgroundElement" style={styles.stepContainer}>
-          <HintRow
-            title="Try editing"
-            hint={<ThemedText type="code">src/app/index.tsx</ThemedText>}
-          />
-          <HintRow title="Dev tools" hint={getDevMenuHint()} />
-          <HintRow
-            title="Fresh start"
-            hint={<ThemedText type="code">npm run reset-project</ThemedText>}
-          />
-        </ThemedView>
-
-        {Platform.OS === 'web' && <WebBadge />}
-      </SafeAreaView>
-    </ThemedView>
+    <PressableScale onPress={onPress} accessibilityLabel={label} style={styles.tileWrap}>
+      <View style={[styles.tile, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+        <AppText style={styles.tileEmoji}>{emoji}</AppText>
+        <AppText variant="caption">{label}</AppText>
+      </View>
+    </PressableScale>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
+  header: {
     flexDirection: 'row',
-  },
-  safeArea: {
-    flex: 1,
-    paddingHorizontal: Spacing.four,
     alignItems: 'center',
-    gap: Spacing.three,
-    paddingBottom: BottomTabInset + Spacing.three,
-    maxWidth: MaxContentWidth,
+    justifyContent: 'space-between',
+    marginTop: 12,
   },
-  heroSection: {
+  coins: {
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 16,
+  },
+  tagline: { marginTop: 4, marginBottom: 24 },
+  daily: {
+    borderRadius: 24,
+    padding: 20,
+    gap: 6,
+    marginBottom: 16,
+  },
+  playWrap: { marginBottom: 24 },
+  grid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+  },
+  tileWrap: { width: '30.5%', flexGrow: 1 },
+  tile: {
+    borderRadius: 20,
+    borderWidth: 1,
     alignItems: 'center',
-    justifyContent: 'center',
-    flex: 1,
-    paddingHorizontal: Spacing.four,
-    gap: Spacing.four,
+    paddingVertical: 18,
+    gap: 8,
   },
-  title: {
-    textAlign: 'center',
-  },
-  code: {
-    textTransform: 'uppercase',
-  },
-  stepContainer: {
-    gap: Spacing.three,
-    alignSelf: 'stretch',
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.four,
-    borderRadius: Spacing.four,
-  },
+  tileEmoji: { fontSize: 30, lineHeight: 36 },
 });

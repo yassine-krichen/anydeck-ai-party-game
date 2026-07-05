@@ -1,0 +1,21 @@
+{
+  "id": "animals",
+  "title": "Animals",
+  "emoji": "🦁",
+  "color": "#34C79A",
+  "description": "Act it out! From house pets to deep-sea monsters.",
+  "lang": "en",
+  "premium": false,
+  "cards": [
+    "A lion", "A penguin", "An octopus", "A kangaroo", "A giraffe",
+    "A shark", "A sloth", "An eagle", "A crocodile", "A dolphin",
+    "A gorilla", "A flamingo", "A snake", "A hamster", "An elephant",
+    "A peacock", "A wolf", "A jellyfish", "A camel", "A koala",
+    "A bat", "A hedgehog", "A whale", "A chameleon", "A rooster",
+    "A panda", "A scorpion", "An owl", "A seahorse", "A cheetah",
+    "A turtle", "A parrot", "A polar bear", "A mosquito", "A goat",
+    "A raccoon", "A lobster", "A zebra", "A bee", "A T-Rex",
+    "A squirrel", "A bull", "A platypus", "A spider", "A donkey",
+    "A hummingbird", "A hippo", "A ferret", "A stingray", "A woodpecker"
+  ]
+}

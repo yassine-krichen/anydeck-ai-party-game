@@ -1,0 +1,21 @@
+{
+  "id": "anime",
+  "title": "Anime",
+  "emoji": "🌸",
+  "color": "#FF6FB5",
+  "description": "Shonen legends, Ghibli magic, and everything in between.",
+  "lang": "en",
+  "premium": true,
+  "cards": [
+    "Naruto", "Goku", "One Piece", "Attack on Titan", "Pikachu",
+    "Death Note", "Luffy", "Demon Slayer", "Sailor Moon", "Dragon Ball Z",
+    "Totoro", "Jujutsu Kaisen", "Vegeta", "Spirited Away", "Levi Ackerman",
+    "Fullmetal Alchemist", "Zoro", "My Hero Academia", "Light Yagami", "Eren Yeager",
+    "Hunter x Hunter", "Saitama", "Tokyo Ghoul", "Itachi Uchiha", "One Punch Man",
+    "Gojo Satoru", "Bleach", "Nezuko", "Kakashi", "Chainsaw Man",
+    "Howl's Moving Castle", "Killua", "Berserk", "Sasuke", "Spy x Family",
+    "Ichigo", "Princess Mononoke", "Tanjiro", "Cowboy Bebop", "Frieza",
+    "Detective Conan", "Doraemon", "Evangelion", "Gon", "JoJo's Bizarre Adventure",
+    "Anya Forger", "Akira", "Mob Psycho 100", "Sukuna", "Pokéball"
+  ]
+}

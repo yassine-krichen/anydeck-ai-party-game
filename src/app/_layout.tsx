@@ -1,18 +1,39 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from 'expo-router';
-import * as SplashScreen from 'expo-splash-screen';
-import { useColorScheme } from 'react-native';
+import { Stack } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
 
-import { AnimatedSplashOverlay } from '@/components/animated-icon';
-import AppTabs from '@/components/app-tabs';
+import { EconomyProvider } from '@/features/economy/economy';
+import { MatchProvider } from '@/features/game/match-store';
+import { SettingsProvider, useSettings } from '@/features/settings/settings';
+import { useAppTheme } from '@/features/theme/use-app-theme';
 
-SplashScreen.preventAutoHideAsync();
-
-export default function TabLayout() {
-  const colorScheme = useColorScheme();
+function ThemedStack() {
+  const { dark, colors } = useAppTheme();
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <AnimatedSplashOverlay />
-      <AppTabs />
-    </ThemeProvider>
+    <>
+      <StatusBar style={dark ? 'light' : 'dark'} />
+      <Stack
+        screenOptions={{
+          headerShown: false,
+          contentStyle: { backgroundColor: colors.bg },
+          animation: 'slide_from_right',
+          gestureEnabled: true,
+        }}
+      >
+        <Stack.Screen name="play" options={{ gestureEnabled: false, animation: 'fade' }} />
+        <Stack.Screen name="results" options={{ gestureEnabled: false, animation: 'fade' }} />
+      </Stack>
+    </>
+  );
+}
+
+export default function RootLayout() {
+  return (
+    <SettingsProvider>
+      <EconomyProvider>
+        <MatchProvider>
+          <ThemedStack />
+        </MatchProvider>
+      </EconomyProvider>
+    </SettingsProvider>
   );
 }

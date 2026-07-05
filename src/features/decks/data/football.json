@@ -1,0 +1,21 @@
+{
+  "id": "football",
+  "title": "Football",
+  "emoji": "⚽",
+  "color": "#30D158",
+  "description": "Legends, clubs, and moments that stopped the world.",
+  "lang": "en",
+  "premium": true,
+  "cards": [
+    "Lionel Messi", "Cristiano Ronaldo", "Real Madrid", "The World Cup", "Pelé",
+    "Zinedine Zidane", "FC Barcelona", "Kylian Mbappé", "Diego Maradona", "Manchester United",
+    "Neymar", "The Champions League", "Ronaldinho", "Liverpool FC", "Erling Haaland",
+    "A red card", "Bayern Munich", "Mohamed Salah", "The offside trap", "Juventus",
+    "Thierry Henry", "A penalty shootout", "Paris Saint-Germain", "Sadio Mané", "The hand of God",
+    "Karim Benzema", "Arsenal", "A hat-trick", "Luka Modrić", "Chelsea",
+    "Riyad Mahrez", "The El Clásico", "Vinícius Júnior", "AC Milan", "A bicycle kick",
+    "Andrés Iniesta", "Manchester City", "Didier Drogba", "The VAR", "Inter Milan",
+    "Jude Bellingham", "A free kick", "Sergio Ramos", "Borussia Dortmund", "The golden boot",
+    "Youssef En-Nesyri", "A nutmeg", "Kevin De Bruyne", "Atlético Madrid", "Lamine Yamal"
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "id": "history",
+  "title": "History",
+  "emoji": "🏛️",
+  "color": "#C9A227",
+  "description": "Empires, revolutions, and the people who shaped the world.",
+  "lang": "en",
+  "premium": true,
+  "cards": [
+    "Napoleon Bonaparte", "The pyramids of Giza", "Julius Caesar", "World War II", "Cleopatra",
+    "The Roman Empire", "Christopher Columbus", "The French Revolution", "Genghis Khan", "The Titanic",
+    "Alexander the Great", "The Berlin Wall", "The Vikings", "Abraham Lincoln", "The Cold War",
+    "The samurai", "Queen Elizabeth II", "The Moon landing", "Hannibal", "The Renaissance",
+    "The gladiators", "Nelson Mandela", "The Ottoman Empire", "The Trojan Horse", "Winston Churchill",
+    "The Great Fire of London", "The Aztecs", "Mahatma Gandhi", "The Industrial Revolution", "Anne Frank",
+    "Carthage", "The Wright brothers", "The Black Death", "Leonardo da Vinci", "The Silk Road",
+    "Martin Luther King Jr.", "The Spanish Armada", "Tutankhamun", "The printing press", "Joan of Arc",
+    "The Stone Age", "Che Guevara", "The Colosseum", "Ibn Khaldoun", "The Crusades",
+    "Marco Polo", "The Titanic iceberg", "The Mayans", "Rosa Parks", "The Sphinx"
+  ]
+}

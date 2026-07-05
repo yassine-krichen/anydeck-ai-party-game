@@ -1,0 +1,21 @@
+{
+  "id": "video-games",
+  "title": "Video Games",
+  "emoji": "🎮",
+  "color": "#7C4DFF",
+  "description": "From retro arcades to today's biggest titles.",
+  "lang": "en",
+  "premium": true,
+  "cards": [
+    "Mario", "Minecraft", "Fortnite", "The Legend of Zelda", "Pac-Man",
+    "GTA V", "Sonic the Hedgehog", "Among Us", "Call of Duty", "Tetris",
+    "Pokémon", "League of Legends", "Lara Croft", "FIFA", "Elden Ring",
+    "Kirby", "Valorant", "The Witcher", "Candy Crush", "Doom",
+    "Red Dead Redemption", "Pikachu", "Counter-Strike", "Animal Crossing", "God of War",
+    "Roblox", "Assassin's Creed", "Luigi", "World of Warcraft", "Fall Guys",
+    "Cyberpunk 2077", "Street Fighter", "Halo", "The Sims", "Clash of Clans",
+    "Metal Gear Solid", "Rocket League", "Donkey Kong", "Overwatch", "Skyrim",
+    "Space Invaders", "Apex Legends", "Bowser", "Hollow Knight", "Mortal Kombat",
+    "Baldur's Gate 3", "Angry Birds", "Dark Souls", "Super Smash Bros", "Portal"
+  ]
+}

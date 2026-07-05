@@ -1,0 +1,21 @@
+{
+  "id": "classic",
+  "title": "Classic Mix",
+  "emoji": "🎉",
+  "color": "#FF5470",
+  "description": "A bit of everything — the perfect first deck for any group.",
+  "lang": "en",
+  "premium": false,
+  "cards": [
+    "Superman", "The Eiffel Tower", "Pizza", "Michael Jackson", "A giraffe",
+    "Brushing your teeth", "Titanic", "A firefighter", "Harry Potter", "The beach",
+    "A vampire", "Riding a bike", "Albert Einstein", "A wedding", "Popcorn",
+    "The Moon", "A dentist", "Spider-Man", "Karaoke", "A snowman",
+    "Mona Lisa", "Skydiving", "A pirate", "Ice cream", "Beyoncé",
+    "A rollercoaster", "Santa Claus", "Yoga", "A magician", "The pyramids",
+    "A traffic jam", "Sushi", "A ghost", "Camping", "Leonardo DiCaprio",
+    "A selfie", "The gym", "A mermaid", "Fireworks", "A job interview",
+    "Chess", "A waterfall", "Batman", "A birthday cake", "Surfing",
+    "A police officer", "The rainbow", "A robot", "Bowling", "A ninja"
+  ]
+}
