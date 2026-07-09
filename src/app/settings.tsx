@@ -124,23 +124,6 @@ export default function SettingsScreen() {
         </View>
       </Section>
 
-      <Section title="ANYDECK+">
-        {economy.state.subscriptionActive ? (
-          <AppText>Subscribed — every deck is unlocked. Thank you!</AppText>
-        ) : (
-          <>
-            <AppText dim style={styles.premiumPitch}>
-              Every premium deck, all future packs, unlimited AI deck generation. $2.99/month.
-            </AppText>
-            <BigButton
-              label="Get AnyDeck+"
-              icon="crown"
-              onPress={() => economy.purchaseSubscription()}
-            />
-          </>
-        )}
-      </Section>
-
       <AppText variant="caption" dim center style={styles.version}>
         AnyDeck 1.0.0 · made for game nights
       </AppText>
@@ -248,6 +231,5 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-  premiumPitch: { marginBottom: 4 },
   version: { marginTop: 12 },
 });

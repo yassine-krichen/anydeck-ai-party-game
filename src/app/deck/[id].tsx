@@ -17,7 +17,7 @@ import {
   toggleFavorite,
 } from '@/features/decks/deck-storage';
 import type { Deck } from '@/features/decks/deck.types';
-import { isDeckPlayable, useEconomy } from '@/features/economy/economy';
+import { DECK_UNLOCK_COST, isDeckPlayable, useEconomy } from '@/features/economy/economy';
 import { useAppTheme } from '@/features/theme/use-app-theme';
 
 /** QR payload limit — beyond this the code is unscannable on small screens. */
@@ -63,6 +63,15 @@ export default function DeckDetailScreen() {
     await Share.share({
       message: `Play my "${deck.title}" deck in AnyDeck!\n\nOpen AnyDeck → Import → paste this code:\n\n${shareCode}`,
     });
+  };
+
+  const onUnlock = () => {
+    if (!economy.unlockDeck(deck.id, DECK_UNLOCK_COST)) {
+      Alert.alert(
+        'Not enough coins',
+        `${deck.title} costs ${DECK_UNLOCK_COST} coins. Play rounds and daily challenges to earn more.`
+      );
+    }
   };
 
   const onDelete = () => {
@@ -136,24 +145,12 @@ export default function DeckDetailScreen() {
             <Icon name="lock" size={18} color={colors.textDim} />
             <AppText variant="headline">Premium deck</AppText>
           </View>
+          <AppText dim center style={styles.lockBalance}>
+            {economy.state.coins} coins available
+          </AppText>
           <BigButton
-            label="Unlock forever · $1.99"
-            onPress={async () => {
-              await economy.purchaseDeck(deck.id);
-            }}
-          />
-          <BigButton
-            variant="secondary"
-            label="Watch an ad — free this session"
-            onPress={async () => {
-              await economy.showRewardedAd(deck.id);
-            }}
-          />
-          <BigButton
-            variant="ghost"
-            icon="crown"
-            label="Get everything with AnyDeck+"
-            onPress={() => router.push('/settings')}
+            label={`Unlock forever · ${DECK_UNLOCK_COST} coins`}
+            onPress={onUnlock}
           />
         </View>
       )}
@@ -256,6 +253,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   lockActions: { gap: 10 },
+  lockBalance: { marginBottom: 2 },
   lockHeader: {
     flexDirection: 'row',
     alignItems: 'center',

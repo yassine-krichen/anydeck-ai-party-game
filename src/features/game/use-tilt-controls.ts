@@ -31,7 +31,8 @@ export function useTiltControls({ enabled, onTiltDown, onTiltUp, onSample }: Til
   handlers.current = { onTiltDown, onTiltUp, onSample };
 
   useEffect(() => {
-    if (!enabled) return;
+    // expo-sensors has no Accelerometer backend on web; addListener throws there.
+    if (!enabled || Platform.OS === 'web') return;
     armed.current = true;
     Accelerometer.setUpdateInterval(UPDATE_INTERVAL_MS);
     let smoothed = 0;

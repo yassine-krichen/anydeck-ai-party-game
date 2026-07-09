@@ -36,6 +36,10 @@ yarn-error.*
 # typescript
 *.tsbuildinfo
 
+# tests
+coverage/
+.playwright-mcp/
+
 example
 
 # generated native folders

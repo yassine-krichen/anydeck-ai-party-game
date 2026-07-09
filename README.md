@@ -52,6 +52,10 @@ npx expo start        # scan QR with Expo Go (sensors need a real phone)
 
 Tilt controls need a physical device. In the simulator use the tap zones.
 
+```sh
+npm test              # game engine + deck share-codec unit tests
+```
+
 ## AI deck generation (server)
 
 The mobile app calls a tiny API so the AI key never ships in the binary. The server uses
@@ -74,17 +78,17 @@ The endpoint ships with input validation and a best-effort per-device/IP rate li
 (10 decks/hour). For serious volume, swap the in-memory limiter for Upstash Redis and
 add entitlement checks (subscription receipt) before generating.
 
-## Monetization plan (seams already in code)
+## Monetization plan
 
 | Stream | Status |
 |--------|--------|
 | Free decks (Classic, Animals, Food, Countries) | ✅ shipping |
-| Premium decks $1.99 each | Stub in `economy.tsx` → wire RevenueCat `purchaseDeck` |
-| AnyDeck+ subscription $2.99/mo (all decks + unlimited AI) | Stub → RevenueCat `purchaseSubscription` |
-| Rewarded ad unlocks a premium deck for one session | Stub → AdMob `showRewardedAd` |
+| Premium decks — unlock with in-app coins (earned by playing) | ✅ shipping (`unlockDeck` in `economy.tsx`) |
 | Daily challenge coins → cosmetic accent themes | ✅ fully local, shipping |
+| AnyDeck+ subscription (all decks + unlimited AI) | v1.1 — seam (`purchaseSubscription`) exists in `economy.tsx`, not wired to any UI or RevenueCat yet |
+| Rewarded ad unlocks a premium deck for one session | v1.1 — seam (`showRewardedAd`) exists in `economy.tsx`, not wired to any UI or AdMob yet |
 
-All three payment/ad stubs live in one file (`src/features/economy/economy.tsx`) and grant instantly today, so the whole app is testable without store accounts.
+v1 has no real-money payments at all — every button in the app does exactly what it says. The subscription/ad functions stay in `economy.tsx` as documented seams so v1.1 can wire RevenueCat/AdMob without restructuring the economy.
 
 ## Design system
 
@@ -102,10 +106,11 @@ All three payment/ad stubs live in one file (`src/features/economy/economy.tsx`)
 - [x] App icon, adaptive icon, monochrome icon, splash, favicon (`scripts/generate-icons.js`)
 - [x] EAS build profiles (`eas.json`), bundle IDs (`com.anydeck.app`), export-compliance flag
 - [x] Root error boundary, orientation handling (portrait app, landscape gameplay)
-- [x] Generation server: Gemini 2.5 Flash free tier, validation + rate limiting
+- [x] Generation server: Gemini 2.5 Flash free tier, validation + rate limiting (needs deploying — see above)
 - [x] Privacy policy (`PRIVACY.md`) — no data collected, everything on-device
-- [ ] RevenueCat + store products (deck unlocks, subscription) — seams in `economy.tsx`
-- [ ] AdMob rewarded ads — seam in `economy.tsx`
+- [x] Coin-based deck unlocks — real, local, no store account needed
+- [x] Unit tests for game engine + deck share-codec (`npm test`)
+- [ ] RevenueCat subscription + AdMob rewarded ads (v1.1) — seams in `economy.tsx`
 - [ ] Store listings (screenshots of the color-flood play screen)
 - [ ] More non-English bundled decks (ar/fr) — biggest cheap growth lever
 

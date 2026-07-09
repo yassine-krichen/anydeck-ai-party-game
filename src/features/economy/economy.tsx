@@ -14,11 +14,12 @@ import { readJson, writeJson } from '@/lib/storage';
 /**
  * Local coin economy + entitlements.
  *
- * Real payments are intentionally behind one seam: `purchaseDeck`,
- * `purchaseSubscription` and `showRewardedAd` are the only three functions
- * that need a RevenueCat/AdMob implementation before store release.
- * Everything else (coins, cosmetics, daily challenge) is fully local.
+ * v1 ships with coin-based unlocks only (real, local, no store account
+ * needed). `purchaseSubscription` and `showRewardedAd` stay as documented
+ * seams for a v1.1 RevenueCat/AdMob pass but aren't called from any screen
+ * yet — don't wire UI to them until there's a real product behind them.
  */
+export const DECK_UNLOCK_COST = 500;
 export interface EconomyState {
   coins: number;
   ownedDeckIds: string[];
@@ -43,8 +44,9 @@ interface EconomyContextValue {
   addCoins: (amount: number) => void;
   spendCoins: (amount: number) => boolean;
   unlockAccent: (accentId: string, price: number) => boolean;
-  /** Payment seam — replace stub with RevenueCat purchase. */
-  purchaseDeck: (deckId: string) => Promise<boolean>;
+  /** Spends coins to permanently own a premium deck. False if not enough coins. */
+  unlockDeck: (deckId: string, price: number) => boolean;
+  /** Payment seam — replace stub with RevenueCat purchase. Not called from UI yet. */
   purchaseSubscription: () => Promise<boolean>;
   /** Ad seam — replace stub with AdMob rewarded ad. Unlocks deck for this session. */
   showRewardedAd: (deckId: string) => Promise<boolean>;
@@ -117,15 +119,19 @@ export function EconomyProvider({ children }: { children: ReactNode }) {
     [persist]
   );
 
-  const purchaseDeck = useCallback(
-    async (deckId: string) => {
-      // STUB: call RevenueCat here. Grant on confirmed transaction only.
-      persist((p) =>
-        p.ownedDeckIds.includes(deckId)
-          ? p
-          : { ...p, ownedDeckIds: [...p.ownedDeckIds, deckId] }
-      );
-      return true;
+  const unlockDeck = useCallback(
+    (deckId: string, price: number) => {
+      let ok = false;
+      persist((p) => {
+        if (p.ownedDeckIds.includes(deckId)) {
+          ok = true;
+          return p;
+        }
+        if (p.coins < price) return p;
+        ok = true;
+        return { ...p, coins: p.coins - price, ownedDeckIds: [...p.ownedDeckIds, deckId] };
+      });
+      return ok;
     },
     [persist]
   );
@@ -164,7 +170,7 @@ export function EconomyProvider({ children }: { children: ReactNode }) {
       addCoins,
       spendCoins,
       unlockAccent,
-      purchaseDeck,
+      unlockDeck,
       purchaseSubscription,
       showRewardedAd,
       claimDaily,
@@ -176,7 +182,7 @@ export function EconomyProvider({ children }: { children: ReactNode }) {
       addCoins,
       spendCoins,
       unlockAccent,
-      purchaseDeck,
+      unlockDeck,
       purchaseSubscription,
       showRewardedAd,
       claimDaily,
