@@ -46,7 +46,7 @@ export function BigButton({
         ]}
       >
         {icon && <Icon name={icon} size={20} color={labelColor} />}
-        <AppText variant="headline" color={labelColor}>
+        <AppText variant="headline" color={labelColor} numberOfLines={1}>
           {label}
         </AppText>
       </View>

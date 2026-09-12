@@ -2,7 +2,7 @@ import { useKeepAwake } from 'expo-keep-awake';
 import { useRouter } from 'expo-router';
 import * as ScreenOrientation from 'expo-screen-orientation';
 import { useEffect, useRef, useState } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, TextInput, View } from 'react-native';
 import Animated, {
   interpolateColor,
   useAnimatedStyle,
@@ -18,7 +18,9 @@ import { getDeck } from '@/features/decks/deck-storage';
 import { dailyChallengeDeck } from '@/features/decks/deck-registry';
 import type { Deck } from '@/features/decks/deck.types';
 import { useEconomy } from '@/features/economy/economy';
+import type { GameConfig } from '@/features/game/game.types';
 import { useMatch } from '@/features/game/match-store';
+import { compareGuessProgress, isCloseMatch } from '@/features/game/text-match';
 import { useGameEngine, type EngineSummary } from '@/features/game/use-game-engine';
 import { useTiltControls } from '@/features/game/use-tilt-controls';
 import {
@@ -31,28 +33,52 @@ import { useSettings } from '@/features/settings/settings';
 import { recordRound } from '@/features/stats/stats-storage';
 
 const DAILY_REWARD = 50;
+const DOUBLE_TAP_WINDOW_MS = 350;
 
 export default function PlayScreen() {
   const router = useRouter();
   const { config, turnIndex, currentEntry } = useMatch();
-  const [deck, setDeck] = useState<Deck | null>(null);
+  const [playDeck, setPlayDeck] = useState<Deck | null>(null);
   const [phase, setPhase] = useState<'handoff' | 'round'>('handoff');
 
   useKeepAwake();
 
   useEffect(() => {
-    ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE).catch(() => {});
+    const orientation =
+      config?.mode === 'solo'
+        ? ScreenOrientation.OrientationLock.PORTRAIT_UP
+        : ScreenOrientation.OrientationLock.LANDSCAPE;
+    ScreenOrientation.lockAsync(orientation).catch(() => {});
     return () => {
       ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP).catch(() => {});
     };
-  }, []);
+  }, [config?.mode]);
 
   useEffect(() => {
     if (!config) {
       router.replace('/');
       return;
     }
-    getDeck(config.deckId).then((d) => setDeck(d ?? null));
+    Promise.all([
+      getDeck(config.deckId),
+      ...(config.extraDeckIds ?? []).map((id) => getDeck(id)),
+    ]).then(([primary, ...extras]) => {
+      if (!primary) {
+        setPlayDeck(null);
+        return;
+      }
+      const validExtras = extras.filter((d): d is Deck => !!d);
+      if (validExtras.length === 0) {
+        setPlayDeck(primary);
+        return;
+      }
+      const cards = [primary, ...validExtras].flatMap((d) => d.cards);
+      const hintWords = [primary, ...validExtras].reduce<Record<string, string[]>>(
+        (acc, d) => ({ ...acc, ...d.hintWords }),
+        {}
+      );
+      setPlayDeck({ ...primary, cards, hintWords });
+    });
   }, [config, router]);
 
   // New turn -> back to handoff.
@@ -60,23 +86,35 @@ export default function PlayScreen() {
     setPhase('handoff');
   }, [turnIndex]);
 
-  if (!config || !deck) return <View style={styles.blank} />;
+  if (!config || !playDeck) return <View style={styles.blank} />;
 
   if (phase === 'handoff') {
+    const isSolo = config.mode === 'solo';
     return (
-      <View style={[styles.handoff, { backgroundColor: deck.color }]}>
-        <View style={styles.handoffDeck}>
-          <Icon name={deck.icon} size={16} color="rgba(255,255,255,0.85)" />
-          <AppText variant="caption" color="rgba(255,255,255,0.85)">
-            {deck.title.toUpperCase()}
-          </AppText>
-        </View>
+      <View style={[styles.handoff, { backgroundColor: playDeck.color }]}>
+        {!config.mystery && (
+          <View style={styles.handoffDeck}>
+            <Icon name={playDeck.icon} size={16} color="rgba(255,255,255,0.85)" />
+            <AppText variant="caption" color="rgba(255,255,255,0.85)">
+              {playDeck.title.toUpperCase()}
+            </AppText>
+          </View>
+        )}
+        {config.mystery && (
+          <View style={styles.handoffDeck}>
+            <Icon name="eye-off" size={16} color="rgba(255,255,255,0.85)" />
+            <AppText variant="caption" color="rgba(255,255,255,0.85)">
+              MYSTERY DECK
+            </AppText>
+          </View>
+        )}
         <AppText variant="display" color="#FFFFFF" center>
-          {config.mode === 'quick' ? 'Get ready' : `Pass the phone to ${currentEntry}`}
+          {config.mode === 'quick' || isSolo ? 'Get ready' : `Pass the phone to ${currentEntry}`}
         </AppText>
         <AppText color="rgba(255,255,255,0.9)" center style={styles.handoffHint}>
-          Hold the phone on your forehead, screen facing your friends.{'\n'}
-          Tilt down when you guess it · tilt up to skip.
+          {isSolo
+            ? 'Guess from the clue words before time runs out. Stuck? Skip the card.'
+            : 'Hold the phone on your forehead, screen facing your friends.\nTilt down when you guess it · tilt up to skip.'}
         </AppText>
         <View style={styles.handoffButton}>
           <BigButton
@@ -90,20 +128,82 @@ export default function PlayScreen() {
     );
   }
 
-  return <Round key={turnIndex} deck={deck} />;
+  return config.mode === 'solo' ? (
+    <SoloRound key={turnIndex} deck={playDeck} config={config} />
+  ) : (
+    <Round key={turnIndex} deck={playDeck} />
+  );
 }
 
-function Round({ deck }: { deck: Deck }) {
+/** Shared HUD: points / timer (or infinity, double-tap to end) / skips. */
+function RoundHud({
+  points,
+  secondsLeft,
+  unlimited,
+  skipsLeft,
+  hasSkipLimit,
+  onEndRound,
+}: {
+  points: number;
+  secondsLeft: number;
+  unlimited: boolean;
+  skipsLeft: number;
+  hasSkipLimit: boolean;
+  onEndRound: () => void;
+}) {
+  const lastTap = useRef(0);
+
+  const onTimerPress = () => {
+    if (!unlimited) return;
+    const now = Date.now();
+    if (now - lastTap.current < DOUBLE_TAP_WINDOW_MS) {
+      onEndRound();
+    }
+    lastTap.current = now;
+  };
+
+  return (
+    <View style={styles.hud}>
+      <View style={styles.hudPill}>
+        <Icon name="check" size={18} color="#FFFFFF" strokeWidth={3} />
+        <AppText variant="headline" color="#FFFFFF">
+          {points}
+        </AppText>
+      </View>
+      <Pressable
+        onPress={onTimerPress}
+        accessibilityLabel={unlimited ? 'Double-tap to end round' : 'Time left'}
+      >
+        <View style={[styles.hudPill, !unlimited && secondsLeft <= 5 && styles.hudUrgent]}>
+          {unlimited ? (
+            <Icon name="infinity" size={22} color="#FFFFFF" />
+          ) : (
+            <AppText variant="title" color="#FFFFFF">
+              {secondsLeft}
+            </AppText>
+          )}
+        </View>
+      </Pressable>
+      <View style={styles.hudPill}>
+        <Icon name="skip-forward" size={16} color="#FFFFFF" />
+        {hasSkipLimit ? (
+          <AppText variant="headline" color="#FFFFFF">
+            {skipsLeft}
+          </AppText>
+        ) : (
+          <Icon name="infinity" size={18} color="#FFFFFF" />
+        )}
+      </View>
+    </View>
+  );
+}
+
+function useRoundEnd(deck: Deck) {
   const router = useRouter();
   const { config, currentEntry, finishRound } = useMatch();
   const { settings } = useSettings();
   const { addCoins, claimDaily, dailyClaimedToday } = useEconomy();
   const sounds = useGameSounds();
-
-  const tilt = useSharedValue(0);
-  const [feedback, setFeedback] = useState<{ kind: 'correct' | 'skip'; key: number } | null>(
-    null
-  );
   const finishing = useRef(false);
 
   const onEnd = (summary: EngineSummary) => {
@@ -140,6 +240,19 @@ function Round({ deck }: { deck: Deck }) {
       });
     }, 900);
   };
+
+  return { onEnd, sounds };
+}
+
+function Round({ deck }: { deck: Deck }) {
+  const { config } = useMatch();
+  const { settings } = useSettings();
+  const { onEnd, sounds } = useRoundEnd(deck);
+
+  const tilt = useSharedValue(0);
+  const [feedback, setFeedback] = useState<{ kind: 'correct' | 'skip'; key: number } | null>(
+    null
+  );
 
   const engine = useGameEngine({
     cards: deck.cards,
@@ -220,29 +333,14 @@ function Round({ deck }: { deck: Deck }) {
 
       {engine.phase === 'playing' && (
         <>
-          <View style={styles.hud}>
-            <View style={styles.hudPill}>
-              <Icon name="check" size={18} color="#FFFFFF" strokeWidth={3} />
-              <AppText variant="headline" color="#FFFFFF">
-                {engine.points}
-              </AppText>
-            </View>
-            <View style={[styles.hudPill, engine.secondsLeft <= 5 && styles.hudUrgent]}>
-              <AppText variant="title" color="#FFFFFF">
-                {engine.secondsLeft}
-              </AppText>
-            </View>
-            <View style={styles.hudPill}>
-              <Icon name="skip-forward" size={16} color="#FFFFFF" />
-              {config && config.maxSkips > 0 ? (
-                <AppText variant="headline" color="#FFFFFF">
-                  {engine.skipsLeft}
-                </AppText>
-              ) : (
-                <Icon name="infinity" size={18} color="#FFFFFF" />
-              )}
-            </View>
-          </View>
+          <RoundHud
+            points={engine.points}
+            secondsLeft={engine.secondsLeft}
+            unlimited={(config?.roundSeconds ?? 0) === 0}
+            skipsLeft={engine.skipsLeft}
+            hasSkipLimit={!!config && config.maxSkips > 0}
+            onEndRound={engine.endRound}
+          />
 
           <View style={styles.center} pointerEvents="none">
             <AppText
@@ -269,6 +367,148 @@ function Round({ deck }: { deck: Deck }) {
 
           {feedback && <FeedbackFlash key={feedback.key} kind={feedback.kind} />}
         </>
+      )}
+
+      {engine.phase === 'ended' && (
+        <View style={styles.center}>
+          <Icon name="timer" size={88} color="#FFFFFF" strokeWidth={1.75} />
+          <AppText variant="display" color="#FFFFFF">
+            Time's up!
+          </AppText>
+        </View>
+      )}
+    </View>
+  );
+}
+
+function SoloRound({ deck, config }: { deck: Deck; config: GameConfig }) {
+  const { settings } = useSettings();
+  const { onEnd, sounds } = useRoundEnd(deck);
+  const [guess, setGuess] = useState('');
+  const [shake, setShake] = useState(0);
+
+  const engine = useGameEngine({
+    cards: deck.hintWords ? deck.cards.filter((c) => deck.hintWords?.[c]) : deck.cards,
+    roundSeconds: config.roundSeconds,
+    maxSkips: config.maxSkips,
+    onEnd,
+  });
+
+  useEffect(() => {
+    if (engine.phase === 'countdown') {
+      sounds.playCountdown();
+      tapHaptic(settings.hapticsEnabled);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [engine.phase, engine.countdown]);
+
+  const onSubmit = () => {
+    if (engine.phase !== 'playing' || guess.trim().length === 0) return;
+    if (isCloseMatch(guess, engine.card)) {
+      sounds.playCorrect();
+      correctHaptic(settings.hapticsEnabled);
+      engine.markCorrect();
+      setGuess('');
+    } else {
+      setShake((n) => n + 1);
+    }
+  };
+
+  const onSkip = () => {
+    if (engine.phase !== 'playing' || engine.skipsLeft <= 0) return;
+    sounds.playSkip();
+    skipHaptic(settings.hapticsEnabled);
+    engine.markSkip();
+    setGuess('');
+  };
+
+  const clues = (deck.hintWords?.[engine.card] ?? []).slice(0, config.soloClueCount ?? 2);
+  const blanks = engine.card.split('');
+  const progress = compareGuessProgress(guess, engine.card);
+
+  return (
+    <View style={[styles.round, { backgroundColor: deck.color }]}>
+      {engine.phase === 'countdown' && (
+        <View style={styles.center}>
+          <AppText style={styles.countdown} color="#FFFFFF">
+            {engine.countdown}
+          </AppText>
+          <AppText variant="headline" color="rgba(255,255,255,0.9)">
+            Get your clue words ready!
+          </AppText>
+        </View>
+      )}
+
+      {engine.phase === 'playing' && (
+        <View style={styles.soloBody}>
+          <RoundHud
+            points={engine.points}
+            secondsLeft={engine.secondsLeft}
+            unlimited={config.roundSeconds === 0}
+            skipsLeft={engine.skipsLeft}
+            hasSkipLimit={config.maxSkips > 0}
+            onEndRound={engine.endRound}
+          />
+          {/* RoundHud is absolutely positioned (shared with the tilt layout) — reserve its space in flow. */}
+          <View style={styles.soloHudSpacer} />
+
+          <View style={styles.soloClues}>
+            {clues.map((word) => (
+              <View key={word} style={styles.clueChip}>
+                <AppText variant="headline" color="#FFFFFF">
+                  {word}
+                </AppText>
+              </View>
+            ))}
+          </View>
+
+          <View key={shake} style={styles.blanksRow}>
+            {blanks.map((ch, i) => {
+              if (ch === ' ') return <View key={i} style={styles.blankGap} />;
+              const status = progress[i];
+              return (
+                <View
+                  key={i}
+                  style={[
+                    styles.blankTile,
+                    status === 'correct' && styles.blankTileCorrect,
+                    status === 'incorrect' && styles.blankTileIncorrect,
+                  ]}
+                >
+                  <AppText variant="headline" color="#FFFFFF">
+                    {status === 'empty' ? '_' : guess[i].toUpperCase()}
+                  </AppText>
+                </View>
+              );
+            })}
+          </View>
+
+          <View style={styles.soloInputRow}>
+            <TextInput
+              value={guess}
+              onChangeText={setGuess}
+              onSubmitEditing={onSubmit}
+              placeholder="Type your guess…"
+              placeholderTextColor="rgba(255,255,255,0.6)"
+              autoCapitalize="none"
+              autoCorrect={false}
+              returnKeyType="send"
+              style={styles.soloInput}
+              accessibilityLabel="Your guess"
+            />
+            <Pressable
+              onPress={onSubmit}
+              accessibilityLabel="Submit guess"
+              style={styles.soloSubmit}
+            >
+              <Icon name="send-horizontal" size={22} color="#1B1B20" />
+            </Pressable>
+          </View>
+
+          <Pressable onPress={onSkip} accessibilityLabel="Skip card" style={styles.soloSkip}>
+            <AppText color="rgba(255,255,255,0.75)">Don't know it — skip</AppText>
+          </Pressable>
+        </View>
       )}
 
       {engine.phase === 'ended' && (
@@ -323,7 +563,7 @@ const styles = StyleSheet.create({
   },
   handoffDeck: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   handoffHint: { marginTop: 4 },
-  handoffButton: { alignSelf: 'stretch', maxWidth: 420, width: '100%', marginTop: 16 },
+  handoffButton: { alignSelf: 'center', maxWidth: 420, width: '100%', marginTop: 16 },
   round: { flex: 1 },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 32 },
   countdown: { fontSize: 120, fontWeight: '900', lineHeight: 130 },
@@ -364,4 +604,57 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingBottom: 18,
   },
+  soloBody: { flex: 1, padding: 24, gap: 20 },
+  soloHudSpacer: { height: 44 },
+  soloClues: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    gap: 10,
+    marginTop: 12,
+  },
+  clueChip: {
+    backgroundColor: 'rgba(0,0,0,0.28)',
+    borderRadius: 14,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+  },
+  blanksRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 6,
+    flex: 1,
+  },
+  blankTile: {
+    width: 30,
+    height: 40,
+    borderRadius: 8,
+    backgroundColor: 'rgba(0,0,0,0.22)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  blankTileCorrect: { backgroundColor: 'rgba(48,209,88,0.75)' },
+  blankTileIncorrect: { backgroundColor: 'rgba(255,69,58,0.75)' },
+  blankGap: { width: 16 },
+  soloInputRow: { flexDirection: 'row', gap: 10, alignItems: 'center' },
+  soloInput: {
+    flex: 1,
+    height: 52,
+    borderRadius: 16,
+    paddingHorizontal: 18,
+    fontSize: 17,
+    color: '#FFFFFF',
+    backgroundColor: 'rgba(0,0,0,0.28)',
+  },
+  soloSubmit: {
+    width: 52,
+    height: 52,
+    borderRadius: 16,
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  soloSkip: { alignSelf: 'center', paddingVertical: 6 },
 });
