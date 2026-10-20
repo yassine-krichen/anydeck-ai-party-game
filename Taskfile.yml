@@ -1,0 +1,50 @@
+version: "3"
+
+vars:
+  PORT: 8081
+
+tasks:
+  help:
+    desc: List all available tasks
+    cmds:
+      - task --list
+
+  install:
+    desc: Install project dependencies
+    cmds:
+      - npm install
+
+  dev:
+    desc: Start the Expo dev server (Metro) on port {{.PORT}} (foreground)
+    cmds:
+      - npm start
+
+  run:
+    desc: Alias of dev - start the Expo dev server
+    cmds:
+      - npm start
+
+  web:
+    desc: Start Expo and open the web build
+    cmds:
+      - npm run web
+
+  android:
+    desc: Start Expo and launch on an Android device/emulator
+    cmds:
+      - npm run android
+
+  ios:
+    desc: Start Expo and launch on iOS (needs macOS - UNVERIFIED on Windows)
+    cmds:
+      - npm run ios
+
+  stop:
+    desc: Best-effort kill of whatever is listening on port {{.PORT}} (standalone use)
+    cmds:
+      - powershell -NoProfile -Command "Get-NetTCPConnection -LocalPort {{.PORT}} -ErrorAction SilentlyContinue | Select-Object -ExpandProperty OwningProcess -Unique | ForEach-Object { Stop-Process -Id \$_ -Force -ErrorAction SilentlyContinue }"
+
+  test:
+    desc: Run the test suite (Jest)
+    cmds:
+      - npm test

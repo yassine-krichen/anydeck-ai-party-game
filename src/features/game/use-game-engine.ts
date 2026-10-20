@@ -6,6 +6,7 @@ export type GamePhase = 'countdown' | 'playing' | 'ended';
 
 interface EngineOptions {
   cards: string[];
+  /** 0 = unlimited — ends on manual endRound() or completing the deck. */
   roundSeconds: number;
   /** 0 = unlimited. */
   maxSkips: number;
@@ -65,14 +66,22 @@ export function useGameEngine({ cards, roundSeconds, maxSkips, onSecondTick, onE
     skipsUsed: 0,
   });
 
-  const nextCard = useCallback((): string => {
-    if (queuePos.current >= queue.current.length) {
+  /** Also reports whether dealing this card just wrapped a full pass through the deck. */
+  const nextCard = useCallback((): { card: string; completedPass: boolean } => {
+    const completedPass = queuePos.current >= queue.current.length;
+    if (completedPass) {
       queue.current = shuffle(queue.current);
       queuePos.current = 0;
     }
     const card = queue.current[queuePos.current];
     queuePos.current += 1;
-    return card;
+    return { card, completedPass };
+  }, []);
+
+  /** Builds the end-of-round state patch and fires onEnd — shared by every way a round can finish. */
+  const finish = useCallback((results: CardResult[], points: number, bestStreak: number) => {
+    callbacks.current.onEnd?.({ results, points, bestStreak });
+    return { phase: 'ended' as const, secondsLeft: 0 };
   }, []);
 
   // Countdown phase.
@@ -84,8 +93,8 @@ export function useGameEngine({ cards, roundSeconds, maxSkips, onSecondTick, onE
         if (prev.phase !== 'countdown') return prev;
         if (prev.countdown > 1) return { ...prev, countdown: prev.countdown - 1 };
         clearInterval(interval);
-        endAt.current = Date.now() + roundSeconds * 1000;
-        return { ...prev, phase: 'playing', card: nextCard() };
+        if (roundSeconds > 0) endAt.current = Date.now() + roundSeconds * 1000;
+        return { ...prev, phase: 'playing', card: nextCard().card };
       });
     }, 1000);
     return () => clearInterval(interval);
@@ -93,9 +102,9 @@ export function useGameEngine({ cards, roundSeconds, maxSkips, onSecondTick, onE
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Round timer.
+  // Round timer — skipped entirely in unlimited mode (roundSeconds === 0).
   useEffect(() => {
-    if (state.phase !== 'playing') return;
+    if (state.phase !== 'playing' || roundSeconds === 0) return;
     const interval = setInterval(() => {
       setState((prev) => {
         if (prev.phase !== 'playing') return prev;
@@ -105,50 +114,52 @@ export function useGameEngine({ cards, roundSeconds, maxSkips, onSecondTick, onE
         }
         if (secondsLeft <= 0) {
           clearInterval(interval);
-          const summary: EngineSummary = {
-            results: prev.results,
-            points: prev.points,
-            bestStreak: prev.bestStreak,
-          };
-          callbacks.current.onEnd?.(summary);
-          return { ...prev, phase: 'ended', secondsLeft: 0 };
+          return { ...prev, ...finish(prev.results, prev.points, prev.bestStreak) };
         }
         return secondsLeft === prev.secondsLeft ? prev : { ...prev, secondsLeft };
       });
     }, 200);
     return () => clearInterval(interval);
-  }, [state.phase]);
+  }, [state.phase, roundSeconds, finish]);
 
   const markCorrect = useCallback(() => {
     setState((prev) => {
       if (prev.phase !== 'playing') return prev;
       const streak = prev.streak + 1;
-      return {
-        ...prev,
-        results: [...prev.results, { card: prev.card, correct: true }],
-        points: prev.points + 1,
-        streak,
-        bestStreak: Math.max(prev.bestStreak, streak),
-        card: nextCard(),
-      };
+      const results = [...prev.results, { card: prev.card, correct: true }];
+      const points = prev.points + 1;
+      const bestStreak = Math.max(prev.bestStreak, streak);
+      const { card, completedPass } = nextCard();
+      if (completedPass && roundSeconds === 0) {
+        return { ...prev, results, points, streak, bestStreak, ...finish(results, points, bestStreak) };
+      }
+      return { ...prev, results, points, streak, bestStreak, card };
     });
-  }, [nextCard]);
+  }, [nextCard, roundSeconds, finish]);
 
   const markSkip = useCallback(() => {
     setState((prev) => {
       if (prev.phase !== 'playing') return prev;
       if (maxSkips > 0 && prev.skipsUsed >= maxSkips) return prev;
-      return {
-        ...prev,
-        results: [...prev.results, { card: prev.card, correct: false }],
-        streak: 0,
-        skipsUsed: prev.skipsUsed + 1,
-        card: nextCard(),
-      };
+      const results = [...prev.results, { card: prev.card, correct: false }];
+      const skipsUsed = prev.skipsUsed + 1;
+      const { card, completedPass } = nextCard();
+      if (completedPass && roundSeconds === 0) {
+        return { ...prev, results, streak: 0, skipsUsed, ...finish(results, prev.points, prev.bestStreak) };
+      }
+      return { ...prev, results, streak: 0, skipsUsed, card };
     });
-  }, [maxSkips, nextCard]);
+  }, [maxSkips, nextCard, roundSeconds, finish]);
+
+  /** Manually ends the round early — the "double-tap to end" affordance in unlimited mode. */
+  const endRound = useCallback(() => {
+    setState((prev) => {
+      if (prev.phase !== 'playing') return prev;
+      return { ...prev, ...finish(prev.results, prev.points, prev.bestStreak) };
+    });
+  }, [finish]);
 
   const skipsLeft = maxSkips > 0 ? maxSkips - state.skipsUsed : Infinity;
 
-  return { ...state, skipsLeft, markCorrect, markSkip };
+  return { ...state, skipsLeft, markCorrect, markSkip, endRound };
 }

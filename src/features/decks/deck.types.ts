@@ -12,6 +12,12 @@ export interface Deck {
   lang: string;
   premium: boolean;
   cards: string[];
+  /**
+   * Solo mode clue words, keyed by card text. Each entry is 4 indirect
+   * words (vaguest first) — never the answer or an obvious synonym.
+   * Optional: decks without coverage simply don't offer solo mode.
+   */
+  hintWords?: Record<string, string[]>;
   source: DeckSource;
   createdAt?: number;
 }

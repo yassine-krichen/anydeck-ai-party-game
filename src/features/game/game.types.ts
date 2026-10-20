@@ -1,8 +1,11 @@
-export type MatchMode = 'quick' | 'players' | 'teams';
+export type MatchMode = 'quick' | 'players' | 'teams' | 'solo';
 
 export interface GameConfig {
   deckId: string;
+  /** Additional decks whose cards get merged into the play pool. */
+  extraDeckIds?: string[];
   mode: MatchMode;
+  /** 0 = unlimited (ends on manual endRound() or completing the deck). */
   roundSeconds: number;
   /** 0 = unlimited skips. */
   maxSkips: number;
@@ -10,6 +13,10 @@ export interface GameConfig {
   entries: string[];
   /** Rounds each entry plays. */
   roundsPerEntry: number;
+  /** Deck identity hidden through setup/handoff, revealed in results. */
+  mystery?: boolean;
+  /** Solo mode: how many of each card's clue words to reveal (1-4). */
+  soloClueCount?: number;
 }
 
 export interface CardResult {

@@ -20,6 +20,7 @@ import { readJson, writeJson } from '@/lib/storage';
  * yet — don't wire UI to them until there's a real product behind them.
  */
 export const DECK_UNLOCK_COST = 500;
+export const SUBSCRIPTION_COIN_BONUS = 5000;
 export interface EconomyState {
   coins: number;
   ownedDeckIds: string[];
@@ -137,8 +138,9 @@ export function EconomyProvider({ children }: { children: ReactNode }) {
   );
 
   const purchaseSubscription = useCallback(async () => {
-    // STUB: call RevenueCat here.
-    persist((p) => ({ ...p, subscriptionActive: true }));
+    // STUB: call RevenueCat here. Coin bonus lets money-gated flows (deck
+    // unlocks, accent themes) still be exercised while testing.
+    persist((p) => ({ ...p, subscriptionActive: true, coins: p.coins + SUBSCRIPTION_COIN_BONUS }));
     return true;
   }, [persist]);
 

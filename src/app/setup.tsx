@@ -15,28 +15,52 @@ import type { MatchMode } from '@/features/game/game.types';
 import { useSettings } from '@/features/settings/settings';
 import { useAppTheme } from '@/features/theme/use-app-theme';
 
+const SOLO_TIME_MULTIPLIER = 1.5;
+
 const modes: { id: MatchMode; label: string; hint: string }[] = [
   { id: 'quick', label: 'Quick', hint: 'One phone, one round, no setup' },
   { id: 'players', label: 'Players', hint: 'Everyone plays, highest score wins' },
   { id: 'teams', label: 'Teams', hint: 'Two teams take turns' },
+  { id: 'solo', label: 'Solo', hint: 'Guess from clue words, type your answer' },
 ];
 
 export default function SetupScreen() {
-  const { deckId } = useLocalSearchParams<{ deckId: string }>();
+  const { deckId, mystery, extraDeckIds } = useLocalSearchParams<{
+    deckId: string;
+    mystery?: string;
+    extraDeckIds?: string;
+  }>();
   const router = useRouter();
   const { colors } = useAppTheme();
   const { settings } = useSettings();
   const { startMatch } = useMatch();
 
+  const isMystery = mystery === '1';
+  const extraIds = extraDeckIds ? extraDeckIds.split(',').filter(Boolean) : [];
+
   const [deck, setDeck] = useState<Deck | null>(null);
+  const [extraDecks, setExtraDecks] = useState<Deck[]>([]);
   const [mode, setMode] = useState<MatchMode>('quick');
   const [players, setPlayers] = useState<string[]>(['Player 1', 'Player 2']);
   const [teams, setTeams] = useState<string[]>(['Team Red', 'Team Blue']);
   const [rounds, setRounds] = useState(1);
+  const [soloClueCount, setSoloClueCount] = useState(2);
 
   useEffect(() => {
     if (deckId) getDeck(deckId).then((d) => setDeck(d ?? null));
   }, [deckId]);
+
+  useEffect(() => {
+    if (extraIds.length === 0) {
+      setExtraDecks([]);
+      return;
+    }
+    Promise.all(extraIds.map((id) => getDeck(id))).then((decks) =>
+      setExtraDecks(decks.filter((d): d is Deck => !!d))
+    );
+    // extraIds is derived fresh from the route param string each render; join it for a stable dep.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [extraDeckIds]);
 
   if (!deck) {
     return (
@@ -47,31 +71,51 @@ export default function SetupScreen() {
     );
   }
 
-  const entries = mode === 'quick' ? ['You'] : mode === 'players' ? players : teams;
+  const hasSoloCoverage = !!deck.hintWords && Object.keys(deck.hintWords).length > 0;
+  const availableModes = modes.filter((m) => m.id !== 'solo' || hasSoloCoverage);
+
+  const title = isMystery
+    ? 'Mystery Deck'
+    : extraDecks.length === 0
+      ? deck.title
+      : extraDecks.length <= 2
+        ? [deck, ...extraDecks].map((d) => d.title).join(' + ')
+        : `${extraDecks.length + 1} decks mixed`;
+
+  const entries = mode === 'quick' || mode === 'solo' ? ['You'] : mode === 'players' ? players : teams;
   const setEntries = mode === 'players' ? setPlayers : setTeams;
   const canStart = entries.every((e) => e.trim().length > 0);
 
   const onStart = () => {
+    const isSolo = mode === 'solo';
+    const roundSeconds =
+      isSolo && settings.roundSeconds > 0
+        ? Math.round(settings.roundSeconds * SOLO_TIME_MULTIPLIER)
+        : settings.roundSeconds;
+
     startMatch({
       deckId: deck.id,
+      extraDeckIds: extraIds.length > 0 ? extraIds : undefined,
       mode,
-      roundSeconds: settings.roundSeconds,
+      roundSeconds,
       maxSkips: settings.maxSkips,
       entries: entries.map((e) => e.trim()),
-      roundsPerEntry: mode === 'quick' ? 1 : rounds,
+      roundsPerEntry: mode === 'quick' || mode === 'solo' ? 1 : rounds,
+      mystery: isMystery,
+      soloClueCount: isSolo ? soloClueCount : undefined,
     });
     router.push('/play');
   };
 
   return (
     <Screen>
-      <TopBar title={deck.title} />
+      <TopBar title={title} />
 
       <AppText variant="caption" dim style={styles.label}>
         MODE
       </AppText>
       <View style={styles.modes}>
-        {modes.map((m) => (
+        {availableModes.map((m) => (
           <PressableScale key={m.id} onPress={() => setMode(m.id)} style={styles.modeWrap}>
             <View
               style={[
@@ -96,7 +140,40 @@ export default function SetupScreen() {
         {modes.find((m) => m.id === mode)?.hint}
       </AppText>
 
-      {mode !== 'quick' && (
+      {mode === 'solo' && (
+        <>
+          <AppText variant="caption" dim style={styles.label}>
+            CLUE WORDS
+          </AppText>
+          <View style={styles.stepper}>
+            {[1, 2, 3, 4].map((n) => (
+              <PressableScale key={n} onPress={() => setSoloClueCount(n)}>
+                <View
+                  style={[
+                    styles.stepperChip,
+                    {
+                      backgroundColor: soloClueCount === n ? colors.accent : colors.surface,
+                      borderColor: soloClueCount === n ? colors.accent : colors.border,
+                    },
+                  ]}
+                >
+                  <AppText
+                    variant="headline"
+                    color={soloClueCount === n ? colors.onAccent : colors.text}
+                  >
+                    {n}
+                  </AppText>
+                </View>
+              </PressableScale>
+            ))}
+          </View>
+          <AppText variant="caption" dim style={styles.hint}>
+            Fewer words = harder. More letters give it away faster.
+          </AppText>
+        </>
+      )}
+
+      {(mode === 'players' || mode === 'teams') && (
         <>
           <AppText variant="caption" dim style={styles.label}>
             {mode === 'players' ? 'PLAYERS' : 'TEAMS'}
@@ -141,10 +218,10 @@ export default function SetupScreen() {
           </AppText>
           <View style={styles.stepper}>
             {[1, 2, 3].map((n) => (
-              <PressableScale key={n} onPress={() => setRounds(n)} style={styles.modeWrap}>
+              <PressableScale key={n} onPress={() => setRounds(n)}>
                 <View
                   style={[
-                    styles.mode,
+                    styles.stepperChip,
                     {
                       backgroundColor: rounds === n ? colors.accent : colors.surface,
                       borderColor: rounds === n ? colors.accent : colors.border,
@@ -167,7 +244,7 @@ export default function SetupScreen() {
       <View style={styles.info}>
         <Icon name="timer" size={14} color={colors.textDim} />
         <AppText variant="caption" dim>
-          {settings.roundSeconds}s per round ·{' '}
+          {settings.roundSeconds === 0 ? 'Unlimited round' : `${settings.roundSeconds}s per round`} ·{' '}
           {settings.maxSkips === 0 ? 'unlimited skips' : `${settings.maxSkips} skips`} — change
           in Settings
         </AppText>
@@ -187,9 +264,17 @@ export default function SetupScreen() {
 
 const styles = StyleSheet.create({
   label: { marginTop: 20, marginBottom: 8 },
-  modes: { flexDirection: 'row', gap: 10 },
-  modeWrap: { flex: 1 },
+  modes: { flexDirection: 'row', gap: 10, flexWrap: 'wrap' },
+  modeWrap: { flex: 1, minWidth: '45%' },
   mode: {
+    borderRadius: 16,
+    borderWidth: 1.5,
+    alignItems: 'center',
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+  },
+  stepperChip: {
+    width: 64,
     borderRadius: 16,
     borderWidth: 1.5,
     alignItems: 'center',

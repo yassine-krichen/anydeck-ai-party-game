@@ -10,7 +10,13 @@ import { useSettings, type Appearance } from '@/features/settings/settings';
 import { accentThemes } from '@/features/theme/colors';
 import { useAppTheme } from '@/features/theme/use-app-theme';
 
-const roundOptions = [30, 60, 90, 120];
+const roundOptions = [
+  { value: 30, label: '30s' },
+  { value: 60, label: '60s' },
+  { value: 90, label: '90s' },
+  { value: 120, label: '120s' },
+  { value: 0, label: '∞' },
+];
 const skipOptions = [
   { value: 0, label: '∞' },
   { value: 3, label: '3' },
@@ -46,12 +52,12 @@ export default function SettingsScreen() {
       <Section title="GAME">
         <RowLabel label="Round length" />
         <View style={styles.options}>
-          {roundOptions.map((seconds) => (
+          {roundOptions.map((opt) => (
             <OptionChip
-              key={seconds}
-              label={`${seconds}s`}
-              active={settings.roundSeconds === seconds}
-              onPress={() => update({ roundSeconds: seconds })}
+              key={opt.value}
+              label={opt.label}
+              active={settings.roundSeconds === opt.value}
+              onPress={() => update({ roundSeconds: opt.value })}
             />
           ))}
         </View>

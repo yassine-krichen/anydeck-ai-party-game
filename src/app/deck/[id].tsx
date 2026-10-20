@@ -152,12 +152,20 @@ export default function DeckDetailScreen() {
             label={`Unlock forever · ${DECK_UNLOCK_COST} coins`}
             onPress={onUnlock}
           />
+          <BigButton
+            variant="ghost"
+            icon="crown"
+            label="Get AnyDeck+ instead"
+            onPress={() => router.push('/premium')}
+          />
         </View>
       )}
 
       <View style={styles.secondaryActions}>
-        <BigButton variant="secondary" icon="share" label="Share deck" onPress={onShare} />
-        {shareCode.length <= MAX_QR_CHARS && (
+        {playable && (
+          <BigButton variant="secondary" icon="share" label="Share deck" onPress={onShare} />
+        )}
+        {playable && shareCode.length <= MAX_QR_CHARS && (
           <BigButton
             variant="secondary"
             icon="qr-code"

@@ -93,4 +93,69 @@ describe('useGameEngine', () => {
       expect.objectContaining({ points: 1, bestStreak: 1, results: expect.any(Array) })
     );
   });
+
+  it('never auto-ends on a timer in unlimited mode (roundSeconds: 0)', async () => {
+    const onEnd = jest.fn();
+    const { result } = await renderHook(() =>
+      useGameEngine({ cards: CARDS, roundSeconds: 0, maxSkips: 0, onEnd })
+    );
+    await skipCountdown();
+
+    await act(async () => {
+      jest.advanceTimersByTime(10 * 60 * 1000);
+    });
+
+    expect(result.current.phase).toBe('playing');
+    expect(onEnd).not.toHaveBeenCalled();
+  });
+
+  it('auto-ends unlimited mode once every card has been seen once', async () => {
+    const onEnd = jest.fn();
+    const { result } = await renderHook(() =>
+      useGameEngine({ cards: CARDS, roundSeconds: 0, maxSkips: 0, onEnd })
+    );
+    await skipCountdown();
+
+    for (let i = 0; i < CARDS.length - 1; i++) {
+      await act(async () => result.current.markCorrect());
+    }
+    expect(result.current.phase).toBe('playing');
+    expect(onEnd).not.toHaveBeenCalled();
+
+    await act(async () => result.current.markCorrect());
+    expect(result.current.phase).toBe('ended');
+    expect(onEnd).toHaveBeenCalledWith(
+      expect.objectContaining({ points: CARDS.length, bestStreak: CARDS.length })
+    );
+  });
+
+  it('endRound() manually finalizes the round with the current summary', async () => {
+    const onEnd = jest.fn();
+    const { result } = await renderHook(() =>
+      useGameEngine({ cards: CARDS, roundSeconds: 0, maxSkips: 0, onEnd })
+    );
+    await skipCountdown();
+
+    await act(async () => result.current.markCorrect());
+    await act(async () => result.current.endRound());
+
+    expect(result.current.phase).toBe('ended');
+    expect(onEnd).toHaveBeenCalledWith(
+      expect.objectContaining({ points: 1, bestStreak: 1 })
+    );
+  });
+
+  it('endRound() is a no-op once the round has already ended', async () => {
+    const onEnd = jest.fn();
+    const { result } = await renderHook(() =>
+      useGameEngine({ cards: CARDS, roundSeconds: 0, maxSkips: 0, onEnd })
+    );
+    await skipCountdown();
+
+    await act(async () => result.current.endRound());
+    expect(onEnd).toHaveBeenCalledTimes(1);
+
+    await act(async () => result.current.endRound());
+    expect(onEnd).toHaveBeenCalledTimes(1);
+  });
 });

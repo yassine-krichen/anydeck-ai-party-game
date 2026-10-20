@@ -12,11 +12,14 @@ interface DeckTileProps {
   locked: boolean;
   favorite: boolean;
   onPress: () => void;
+  /** Undefined = normal browse mode. Boolean = multi-select mode, checked state. */
+  selected?: boolean;
 }
 
 /** Deck row in the browser: solid color badge, title, meta, trailing state. */
-export function DeckTile({ deck, locked, favorite, onPress }: DeckTileProps) {
+export function DeckTile({ deck, locked, favorite, onPress, selected }: DeckTileProps) {
   const { colors } = useAppTheme();
+  const selectMode = selected !== undefined;
 
   const meta = [
     `${deck.cards.length} cards`,
@@ -25,7 +28,13 @@ export function DeckTile({ deck, locked, favorite, onPress }: DeckTileProps) {
 
   return (
     <PressableScale onPress={onPress} accessibilityLabel={`${deck.title} deck`} style={styles.wrap}>
-      <View style={[styles.tile, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+      <View
+        style={[
+          styles.tile,
+          { backgroundColor: colors.surface, borderColor: colors.border },
+          selectMode && selected && { borderColor: colors.accent, borderWidth: 2 },
+        ]}
+      >
         <View style={[styles.badge, { backgroundColor: deck.color }]}>
           <Icon name={deck.icon} size={24} color="#FFFFFF" />
         </View>
@@ -38,11 +47,25 @@ export function DeckTile({ deck, locked, favorite, onPress }: DeckTileProps) {
           </AppText>
         </View>
         <View style={styles.trailing}>
-          {favorite && <Icon name="star" size={16} color={colors.gold} fill={colors.gold} />}
-          {locked ? (
-            <Icon name="lock" size={16} color={colors.textDim} />
+          {selectMode ? (
+            <View
+              style={[
+                styles.checkbox,
+                { borderColor: selected ? colors.accent : colors.border },
+                selected && { backgroundColor: colors.accent },
+              ]}
+            >
+              {selected && <Icon name="check" size={14} color={colors.onAccent} strokeWidth={3} />}
+            </View>
           ) : (
-            <Icon name="chevron-right" size={18} color={colors.textDim} />
+            <>
+              {favorite && <Icon name="star" size={16} color={colors.gold} fill={colors.gold} />}
+              {locked ? (
+                <Icon name="lock" size={16} color={colors.textDim} />
+              ) : (
+                <Icon name="chevron-right" size={18} color={colors.textDim} />
+              )}
+            </>
           )}
         </View>
       </View>
@@ -69,4 +92,12 @@ const styles = StyleSheet.create({
   },
   meta: { flex: 1, gap: 3 },
   trailing: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  checkbox: {
+    width: 24,
+    height: 24,
+    borderRadius: 8,
+    borderWidth: 1.5,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
 });

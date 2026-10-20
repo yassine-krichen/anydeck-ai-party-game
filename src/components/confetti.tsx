@@ -84,7 +84,7 @@ export function Confetti({ colors }: ConfettiProps) {
   if (reducedMotion) return null;
 
   return (
-    <View pointerEvents="none" style={StyleSheet.absoluteFill}>
+    <View pointerEvents="none" style={[StyleSheet.absoluteFill, styles.container]}>
       {pieces.map((spec, i) => (
         <Piece key={i} spec={spec} height={height} />
       ))}
@@ -93,5 +93,6 @@ export function Confetti({ colors }: ConfettiProps) {
 }
 
 const styles = StyleSheet.create({
+  container: { zIndex: 50, elevation: 50 },
   piece: { position: 'absolute', top: 0 },
 });

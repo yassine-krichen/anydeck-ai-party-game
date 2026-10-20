@@ -1,5 +1,5 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Share, StyleSheet, View } from 'react-native';
 
 import { AppText } from '@/components/app-text';
@@ -8,6 +8,7 @@ import { Confetti } from '@/components/confetti';
 import { Icon } from '@/components/icon';
 import { Screen } from '@/components/screen';
 import { getBundledDeck } from '@/features/decks/deck-registry';
+import { getDeck } from '@/features/decks/deck-storage';
 import { useMatch } from '@/features/game/match-store';
 import { recordMatch } from '@/features/stats/stats-storage';
 import { rankColors } from '@/features/theme/colors';
@@ -19,6 +20,7 @@ export default function ResultsScreen() {
   const { coins, daily } = useLocalSearchParams<{ coins?: string; daily?: string }>();
   const match = useMatch();
   const matchRecorded = useRef(false);
+  const [revealedTitle, setRevealedTitle] = useState<string | null>(null);
 
   const { config, rounds, turnIndex, totalTurns, standings } = match;
   const lastRound = rounds[rounds.length - 1];
@@ -27,10 +29,19 @@ export default function ResultsScreen() {
   const deckColor = lastRound ? (getBundledDeck(lastRound.deckId)?.color ?? colors.accent) : colors.accent;
 
   useEffect(() => {
-    if (!config || !lastRound) {
+    if (!config?.mystery || !isMatchOver || !lastRound) return;
+    getDeck(lastRound.deckId).then((d) => setRevealedTitle(d?.title ?? null));
+  }, [config?.mystery, isMatchOver, lastRound?.deckId]);
+
+  useEffect(() => {
+    // Only `!config` means there's truly no active match (e.g. deep-linked
+    // here directly). `lastRound` goes briefly empty during "Play again"
+    // (startMatch resets rounds before the /play navigation completes) —
+    // redirecting on that would race the intended navigation.
+    if (!config) {
       router.replace('/');
     }
-  }, [config, lastRound, router]);
+  }, [config, router]);
 
   useEffect(() => {
     if (!isMatchOver || !config || matchRecorded.current || config.mode === 'quick') return;
@@ -69,8 +80,6 @@ export default function ResultsScreen() {
 
   return (
     <Screen>
-      {isMatchOver && <Confetti colors={[deckColor, colors.accent, '#FFD60A', '#30D158', '#0A84FF']} />}
-
       <View style={styles.headerBlock}>
         <AppText variant="caption" dim>
           {isMatchOver ? 'FINAL RESULTS' : `ROUND ${rounds.length} OF ${totalTurns}`}
@@ -92,6 +101,14 @@ export default function ResultsScreen() {
           {coins && Number(coins) > 0 ? ` · +${coins} coins` : ''}
           {daily === '1' ? ' · daily bonus +50' : ''}
         </AppText>
+        {config.mystery && revealedTitle && (
+          <View style={styles.revealRow}>
+            <Icon name="eye-off" size={14} color={colors.textDim} />
+            <AppText variant="caption" dim>
+              You played: {revealedTitle}
+            </AppText>
+          </View>
+        )}
       </View>
 
       {isMatchOver && config.mode !== 'quick' && (
@@ -168,12 +185,15 @@ export default function ResultsScreen() {
         <BigButton variant="secondary" icon="share" label="Share score" onPress={onShare} />
         <BigButton variant="ghost" label="Home" onPress={onHome} />
       </View>
+
+      {isMatchOver && <Confetti colors={[deckColor, colors.accent, '#FFD60A', '#30D158', '#0A84FF']} />}
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
   headerBlock: { alignItems: 'center', gap: 8, marginTop: 24, marginBottom: 20 },
+  revealRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 2 },
   standings: {
     borderRadius: 20,
     borderWidth: 1,

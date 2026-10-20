@@ -10,11 +10,17 @@
     },
     "preview": {
       "distribution": "internal",
-      "channel": "preview"
+      "channel": "preview",
+      "env": {
+        "EXPO_PUBLIC_ANYDECK_API_URL": "https://anydeck-iota.vercel.app"
+      }
     },
     "production": {
       "autoIncrement": true,
-      "channel": "production"
+      "channel": "production",
+      "env": {
+        "EXPO_PUBLIC_ANYDECK_API_URL": "https://anydeck-iota.vercel.app"
+      }
     }
   },
   "submit": {
